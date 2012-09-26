@@ -1,0 +1,11 @@
+Blog.initialize(Blog.router);
+
+
+
+
+
+
+
+
+
+
