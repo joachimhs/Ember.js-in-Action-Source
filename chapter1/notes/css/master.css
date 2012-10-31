@@ -1,0 +1,102 @@
+body {
+    padding: 10px;
+    background-color: #ffffff;
+    font-family: Rockwell, Verdana, sans-serif;
+    letter-spacing: 0em;
+    color: #353B40;
+    margin: 0px;
+    padding: 0px;
+    font-size: 1.1em;
+}
+
+#leftPanel {
+    background: aliceBlue;
+    border-bottom-left-radius: 8px;
+    position: absolute;
+    left: 10px;
+    width: 220px;
+    top: 10px;
+    bottom:10px;
+    overflow: scroll;
+    padding: 10px;
+}
+
+#rightPanel {
+    background: #fff;
+    position: absolute;
+    left: 260px;
+    right: 10px;
+    top: 10px;
+    bottom: 10px;
+    border: 1px solid #cdd0d4;
+    border-radius: 5px;
+    padding: 10px;
+}
+
+.floatLeft {
+	float: left;
+}
+
+.floatRight {
+    float: right;
+}
+
+.floatNone {
+    float: none;
+}
+
+.mediumTopPadding {
+    margin-top: 9px;
+    margin-right: 9px;
+}
+
+.smallTopPadding {
+    margin-top: 5px;
+    margin-right: 5px;
+}
+.centerAlign {
+    text-align: center;
+}
+
+.fillWidth {
+    width: 100%;
+}
+
+.almostFillWidth {
+    width: 98%;
+}
+
+.smallMarginRight {
+	margin-right: 5px;
+}
+
+.noBorderTop {
+    border-top: none;
+}
+
+.pointer {
+    cursor: pointer;
+}
+
+.fullWidth {
+    width: 95%;
+}
+
+.azureBlueBackground {
+    background-color: #F0F8FF;
+}
+
+.azureBlueBorderThin {
+    border: 1px solid #CEDFED;
+}
+
+.noteListItem {
+    -moz-border-radius: 15px;
+    border-radius: 15px;
+    padding: 7px;
+    line-height: 15px;
+}
+.is-selected {
+    background: #0088cc;
+    color: #f1f4ee;
+}
