@@ -9,9 +9,9 @@ body {
     font-size: 1.1em;
 }
 
-#leftPanel {
+#notes {
     background: aliceBlue;
-    border-bottom-left-radius: 8px;
+    border-radius: 8px;
     position: absolute;
     left: 10px;
     width: 220px;
@@ -21,7 +21,7 @@ body {
     padding: 10px;
 }
 
-#rightPanel {
+#selectedNote {
     background: #fff;
     position: absolute;
     left: 260px;
@@ -29,8 +29,24 @@ body {
     top: 10px;
     bottom: 10px;
     border: 1px solid #cdd0d4;
-    border-radius: 5px;
+    border-radius: 8px;
     padding: 10px;
+    text-align: center;
+}
+
+#selectedNote h1 {
+    text-align: center;
+}
+
+#selectedNote textarea {
+    background: url('/notebook.png') repeat-y;
+    width: 80%;
+    height: 90%;
+    font: normal 14px verdana;
+    line-height: 25px;
+    padding: 2px 10px;
+    padding-left: 95px;
+    border: solid 1px #ddd;
 }
 
 .floatLeft {
@@ -43,6 +59,10 @@ body {
 
 .floatNone {
     float: none;
+}
+
+.input-small {
+    width: 120px;
 }
 
 .mediumTopPadding {
@@ -70,6 +90,10 @@ body {
 	margin-right: 5px;
 }
 
+.smallMarginBottom {
+    margin-bottom: 4px;
+}
+
 .noBorderTop {
     border-top: none;
 }
@@ -94,7 +118,8 @@ body {
     -moz-border-radius: 15px;
     border-radius: 15px;
     padding: 7px;
-    line-height: 15px;
+    line-height: 17px;
+    vertical-align: middle;
 }
 .is-selected {
     background: #0088cc;
