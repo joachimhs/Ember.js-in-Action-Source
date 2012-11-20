@@ -17,7 +17,28 @@ DS.Model.reopen({
     }
 });
 
+//Setting up the adapter to receive data from the server
+Blog.Adapter = DS.Adapter.create({
+    //Finding all object of a certain type. Fetching from the server
+    findAll: function(store, type) {
+        var url = type.url;
+
+        console.log('finding all: type: ' + type + ' url: ' + url);
+
+        $.ajax({
+            type: 'GET',
+            url: url,
+            contentType: 'application/json',
+            success: function(data) { Blog.store.loadMany(type, data); }
+        });
+    },
+
+    find: function(store, type, id) {
+        this.findAll(store, type);
+    }
+});
+
 Blog.store = DS.Store.create({
-    adapter:  DS.RESTAdapter.create({ bulkCommit: false }),
+    adapter:  Blog.Adapter,
     revision: 4
 });

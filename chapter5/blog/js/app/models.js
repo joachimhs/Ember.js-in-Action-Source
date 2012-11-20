@@ -1,10 +1,26 @@
 Blog.BlogPost = DS.Model.extend({
     postTitle: DS.attr('string'),
-    postDate: DS.attr('string'),
+    postDate: DS.attr('date'),
     postShortIntro: DS.attr('string'),
     postLongIntro: DS.attr('string'),
+    postFilename: DS.attr('string'),
+
+    formattedDate: function() {
+        if (this.get('postDate')) {
+            return this.get('postDate').getUTCDay()
+                + "/" + (this.get('postDate').getUTCMonth() + 1)
+                + "/" + this.get('postDate').getUTCFullYear();
+        }
+
+        return '';
+    }.property('postDate').cacheable(),
+
     postFullUrl: function() {
         return "/blog/post/" + this.get('id');
     }.property('id').cacheable(),
     markdown: null
+});
+
+Blog.BlogPost.reopenClass({
+    url: '/blogs.json'
 });

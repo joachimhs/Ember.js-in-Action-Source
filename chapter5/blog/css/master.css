@@ -1,0 +1,126 @@
+body {
+    background-color: #292929;
+    color: #f8f6f6;
+}
+
+body h1 {
+    text-align: center;
+    text-decoration: none;
+    letter-spacing: 3px;
+}
+
+#mainArea {
+    margin: 0 auto;
+    width: 770px;
+}
+
+#mainArea a {
+    color: #c10003;
+    letter-spacing: 2px;
+    text-decoration: none;
+}
+
+#mainArea a:hover {
+    color: #c10003;
+    text-decoration: underline;
+}
+
+#mainArea a:visited {
+    color: #c10003;
+    text-decoration: none;
+}
+
+#mainArea a:active {
+    color: #3c0005;
+}
+
+#mainArea .headerLinks a {
+    color: #fff;
+    letter-spacing: 2px;
+    text-decoration: none;
+}
+
+#mainArea .headerLinks a:hover {
+    color: #fff;
+    text-decoration: underline;
+}
+
+#mainArea .headerLinks a:visited {
+    color: #fff;
+    text-decoration: none;
+}
+
+#mainArea .headerLinks a:active {
+    color: #8f0003;
+}
+
+#blogsArea {
+    background-color: #f8f6f6;
+    color: #292929;
+    width: 770px;
+    border: 2px solid #8f0003;
+    -webkit-border-radius: 19px;
+    -moz-border-radius: 19px;
+    border-radius: 19px;
+    padding: 15px;
+    text-align: left;
+}
+
+#blogsArea h1 {
+    text-align: left;
+    margin-bottom: 5px;
+    margin-top: 5px;
+}
+
+#blogPostArea {
+    background-color: #f8f6f6;
+    color: #292929;
+    width: 770px;
+    border: 2px solid #8f0003;
+    -webkit-border-radius: 19px;
+    -moz-border-radius: 19px;
+    border-radius: 19px;
+    padding: 15px;
+    text-align: left;
+}
+
+#blogPostArea h1 {
+    text-align: left;
+    margin-bottom: 5px;
+    margin-top: 5px;
+}
+
+#aboutArea {
+    background-color: #f8f6f6;
+    color: #292929;
+    width: 770px;
+    border: 2px solid #8f0003;
+    -webkit-border-radius: 19px;
+    -moz-border-radius: 19px;
+    border-radius: 19px;
+    padding: 15px;
+    text-align: left;
+}
+
+.postDate {
+    text-align: right;
+    width: 100%;
+    padding-right: 20px;
+    color: #636363;
+}
+
+.blogSeperator {
+    background-color:#fff;
+    border:#000 1px dotted;
+    border-style: none none dashed;
+    color:#fff;
+}
+
+.headerLinks {
+    text-align: right;
+}
+
+.middot {
+    padding-left: 7px;
+    padding-right: 7px;
+}

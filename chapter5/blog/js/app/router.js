@@ -9,16 +9,10 @@ Blog.router = Ember.Router.create({
         blog: Ember.Route.extend({
             route: '/blog',
             initialState: 'index',
-			
-			doSelectPost: function() {
-				var selectedPost = App.router.get('blogsController')
-                    .get('selectedPost');
-				if (selectedPost) {
-					App.router.transitionTo('blog.blogPost', 
-						{"post_id": selectedPost.get('id')}
-					);
-				}
-			},
+
+            doReturnToIndex: Ember.Router.transitionTo('blog.index'),
+            doNavigateToAbout: Ember.Router.transitionTo('blog.about'),
+			doSelectPost: Ember.Route.transitionTo('blogPost'),
 
             index: Ember.Route.extend({
                 route: '/',
@@ -30,15 +24,19 @@ Blog.router = Ember.Router.create({
             }),
 
             blogPost: Ember.Route.extend({
-                route: '/post/:post_id',
-				
-				doReturnToIndex: Ember.Router.transitionTo('blog.index'),
-				
+                route: '/post/:blog_post_id',
+
                 connectOutlets: function(router, post) {
                     router.get('applicationController')
-						.connectOutlet('blogPost');
-                    router.get('blogsController')
-						.set('selectedPostId', post.post_id);
+						.connectOutlet('blogPost', post);
+                }
+            }),
+
+            about: Ember.Route.extend({
+                route: "/about",
+
+                connectOutlets: function(router) {
+                    router.get('applicationController').connectOutlet('about');
                 }
             })
         })
