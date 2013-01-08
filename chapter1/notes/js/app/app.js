@@ -1,39 +1,31 @@
-var Notes = Ember.Application.create();
+var Notes = Ember.Application.create({LOG_TRANSITIONS: true});
 
 /** Router **/
-Notes.Router = Ember.Router.extend({
-    enableLogging: false,
-    root: Ember.Route.extend({
-        index: Ember.Route.extend({
-            route: '/',
+Notes.Router = Ember.Router.extend({});
 
-            createNewNote: function(router) {
-                router.get('notesController').createNewNote();
-            },
+Notes.Router.map(function (match) {
+    match('/').to('notes');
+});
 
-            doDeleteNote: function(router) {
-                $("#confirmDeleteConfirmDialog").modal({show: true});
-            },
+Notes.NotesRoute = Ember.Route.extend({
+    setupControllers: function(controller) {
+        controller.set('content', []);
+        var selectedNoteController = this.controllerFor('selectedNote');
+        selectedNoteController.set('notesController', controller);
+    },
 
-            doConfirmDelete: function(router) {
-                router.get('notesController').deleteSelectedNote();
-                $("#confirmDeleteConfirmDialog").modal('hide');
-            },
+    renderTemplates: function() {
+        this.render('notes', {
+            outlet: 'notes'
+        });
 
-            doCancelDelete: function(router) {
-                $("#confirmDeleteConfirmDialog").modal('hide');
-            },
+        var selectedNoteController = this.controllerFor('selectedNote');
 
-            connectOutlets: function(router) {
-                router.get('applicationController')
-                    .connectOutlet('notes', 'notes');
-                router.get('applicationController')
-                    .connectOutlet('selectedNote', 'selectedNote');
-                router.get('selectedNoteController')
-                    .connectControllers('notes');
-            }
-        })
-    })
+        this.render('selectedNote', {
+            outlet: 'selectedNote',
+            controller: selectedNoteController
+        });
+    }
 });
 
 /** Controllers **/
@@ -48,7 +40,9 @@ Notes.NotesController = Ember.ArrayController.extend({
         var newNoteName = this.get('newNoteName');
         var unique = true;
         content.forEach(function(note) {
-            if (newNoteName === note.get('name')) { unique = false; return; }
+            if (newNoteName === note.get('name')) {
+                unique = false; return;
+            }
         });
 
         if (unique) {
@@ -61,12 +55,21 @@ Notes.NotesController = Ember.ArrayController.extend({
         }
     },
 
-    deleteSelectedNote: function() {
+    doDeleteNote: function() {
+        $("#confirmDeleteConfirmDialog").modal({show: true});
+    },
+
+    doConfirmDelete: function() {
         var selectedNote = this.get('selectedNote');
         if (selectedNote) {
             this.get('content').removeObject(selectedNote);
             this.set('selectedNote', null);
         }
+        $("#confirmDeleteConfirmDialog").modal('hide');
+    },
+
+    doCancelDelete: function() {
+        $("#confirmDeleteConfirmDialog").modal('hide');
     }
 });
 
@@ -76,10 +79,6 @@ Notes.SelectedNoteController = Ember.ObjectController.extend({
 });
 
 //** Views **/
-Notes.ApplicationView = Ember.View.extend({
-    templateName: 'applicationTemplate'
-});
-
 Notes.NotesView = Ember.View.extend({
     elementId: 'notes',
     templateName: 'notesTemplate',
@@ -109,7 +108,7 @@ Notes.NoteListItemView = Ember.View.extend({
     template: Ember.Handlebars.compile('' +
         '{{name}}' +
         '{{#if view.isSelected}}' +
-            '<button {{action doDeleteNote}} class="btn btn-mini floatRight btn-danger smallMarginBottom">Delete</button>' +
+        '<button {{action doDeleteNote}} class="btn btn-mini floatRight btn-danger smallMarginBottom">Delete</button>' +
         '{{/if}}'),
 
     classNames: ['pointer', 'noteListItem'],
@@ -156,51 +155,75 @@ Notes.BootstrapButton = Ember.View.extend(Ember.TargetActionSupport, {
 Notes.initialize();
 
 //** Templates **/
-Ember.TEMPLATES['applicationTemplate'] = Ember.Handlebars.compile('' +
-    '{{outlet notes}}{{outlet selectedNote}}' +
-    '{{view Notes.ConfirmDialogView ' +
-        'elementId="confirmDeleteConfirmDialog" ' +
-        'okAction="doConfirmDelete" ' +
-        'cancelAction="doCancelDelete" ' +
-        'target="Notes.router" ' +
-        'header="Delete selected note?" ' +
-        'message="Are you sure you want to delete the selected Note? This action cannot be be undone!"' +
-    '}}'
+Ember.TEMPLATES['application'] = Ember.Handlebars.compile('' +
+    '{{outlet notes}}{{outlet selectedNote}}'
 );
 
 Ember.TEMPLATES['confirmDialog'] = Ember.Handlebars.compile(
     '<div class="modal-header centerAlign">' +
         '<button type="button" class="close" data-dismiss="modal" class="floatRight">×</button>' +
         '<h1 class="centerAlign">{{view.header}}</h1>' +
-    '</div>' +
-    '<div class="modal-body">' +
+        '</div>' +
+        '<div class="modal-body">' +
         '{{view.message}}' +
-    '</div>' +
-    '<div class="modal-footer">' +
+        '</div>' +
+        '<div class="modal-footer">' +
         '{{#if view.cancelAction}}' +
-            '{{view Notes.BootstrapButton ' +
-                'contentBinding="view.cancelButtonLabel" ' +
-                'actionBinding="view.cancelAction" ' +
-                'targetBinding="view.target"}}' +
+        '{{view Notes.BootstrapButton ' +
+        'contentBinding="view.cancelButtonLabel" ' +
+        'actionBinding="view.cancelAction" ' +
+        'targetBinding="view.target"}}' +
         '{{/if}}' +
         '{{#if view.okAction}}' +
-            '{{view Notes.BootstrapButton ' +
-                'contentBinding="view.okButtonLabel" ' +
-                'actionBinding="view.okAction" ' +
-                'targetBinding="view.target"}}' +
+        '{{view Notes.BootstrapButton ' +
+        'contentBinding="view.okButtonLabel" ' +
+        'actionBinding="view.okAction" ' +
+        'targetBinding="view.target"}}' +
         '{{/if}}' +
-    '</div>'
+        '</div>'
 );
 
-Ember.TEMPLATES['notesTemplate'] = Ember.Handlebars.compile('' +
-    '{{view Notes.TextField target="Notes.router" action="createNewNote" classNames="input-small search-query mediumTopPadding" valueBinding="controller.newNoteName"}}' +
+Ember.TEMPLATES['notes'] = Ember.Handlebars.compile('' +
+    '{{view Notes.TextField target="controller" action="createNewNote" classNames="input-small search-query mediumTopPadding" valueBinding="controller.newNoteName"}}' +
     '<button class="btn" {{action createNewNote}}>New Note</button>' +
-    '{{view Notes.NoteListView}}'
+    '{{view Notes.NoteListView}}' +
+    '{{view Notes.ConfirmDialogView ' +
+    'elementId="confirmDeleteConfirmDialog" ' +
+    'okAction="doConfirmDelete" ' +
+    'cancelAction="doCancelDelete" ' +
+    'target="controller" ' +
+    'header="Delete selected note?" ' +
+    'message="Are you sure you want to delete the selected Note? This action cannot be be undone!"' +
+    '}}'
 );
 
 Ember.TEMPLATES['selectedNoteTemplate'] = Ember.Handlebars.compile('' +
     '{{#if controller.content}}' +
-        '<h1>{{name}}</h1>' +
-        '{{view Ember.TextArea valueBinding="value"}}' +
+    '<h1>{{name}}</h1>' +
+    '{{view Ember.TextArea valueBinding="value"}}' +
     '{{/if}}'
 );
+
+Notes.Duration = Ember.Object.extend({
+    durationSeconds: 0,
+
+    durationString: function(key, value) {
+        if (arguments.length === 2 && value) {
+            var valueParts = value.split(":");
+            if (valueParts.length == 3) {
+                var duration = (valueParts[0] * 60 * 60) +
+                    (valueParts[1] * 60) + (valueParts[2] * 1);
+                this.set('durationSeconds', duration);
+            }
+        }
+        var duration = this.get('durationSeconds');
+        var hours   = Math.floor(duration / 3600);
+        var minutes = Math.floor((duration - (hours * 3600)) / 60);
+        var seconds = Math.floor(duration - (minutes * 60) -
+            (hours * 3600));
+
+        //force numbers to have 2 digits: "HH:mm" using slice(-2)
+        return ("0" + hours).slice(-2) + ":" +
+            ("0" + minutes).slice(-2) + ":" + ("0" + seconds).slice(-2);
+    }.property('durationSeconds').cacheable()
+});

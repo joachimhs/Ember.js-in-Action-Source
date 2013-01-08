@@ -1,6 +1,10 @@
 var Blog = Ember.Application.create({
 });
 
+Blog.Router = Ember.Router.extend({
+    location: 'hash'
+});
+
 Blog.Router.map(function(match) {
     match("/").to("index");
     match("/blog").to("blogIndex");
@@ -27,6 +31,11 @@ Blog.BlogIndexView = Ember.View.extend({
     elementId: 'blogsArea'
 });
 
+Blog.ApplicationController = Ember.Controller.extend({});
+
+Blog.BlogIndexControlelr = Ember.ArrayController.extend({
+    content: []
+});
 
 Ember.TEMPLATES['application'] = Ember.Handlebars.compile('' +
     '<h1>Ember.js in Action Blog</h1>' +

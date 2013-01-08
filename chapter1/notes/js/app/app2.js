@@ -1,26 +1,31 @@
 var Notes = Ember.Application.create();
 
 /** Router **/
-Notes.Router = Ember.Router.extend({
-    enableLogging: false,
-    root: Ember.Route.extend({
-        index: Ember.Route.extend({
-            route: '/',
+Notes.Router = Ember.Router.extend({});
 
-            createNewNote: function(router) {
-                router.get('notesController').createNewNote();
-            },
+Notes.Router.map(function (match) {
+    match('/').to('notes');
+});
 
-            connectOutlets: function(router) {
-                router.get('applicationController')
-                    .connectOutlet('notes', 'notes');
-                router.get('applicationController')
-                    .connectOutlet('selectedNote', 'selectedNote');
-                router.get('selectedNoteController')
-                    .connectControllers('notes');
-            }
-        })
-    })
+Notes.NotesRoute = Ember.Route.extend({
+    setupControllers: function(controller) {
+        controller.set('content', []);
+        var selectedNoteController = this.controllerFor('selectedNote');
+        selectedNoteController.set('notesController', controller);
+    },
+
+    renderTemplates: function() {
+        this.render('notes', {
+            outlet: 'notes'
+        });
+
+        var selectedNoteController = this.controllerFor('selectedNote');
+
+        this.render('selectedNote', {
+            outlet: 'selectedNote',
+            controller: selectedNoteController
+        });
+    }
 });
 
 /** Controllers **/
@@ -54,13 +59,11 @@ Notes.ApplicationView = Ember.View.extend({
 
 Notes.NotesView = Ember.View.extend({
     elementId: 'notes',
-    templateName: 'notesTemplate',
     classNames: ['azureBlueBackground', 'azureBlueBorderThin']
 });
 
 Notes.SelectedNoteView = Ember.View.extend({
-    elementId: 'selectedNote',
-    templateName: 'selectedNoteTemplate'
+    elementId: 'selectedNote'
 });
 
 Notes.TextField = Ember.TextField.extend(Ember.TargetActionSupport, {
@@ -95,17 +98,17 @@ Notes.NoteListItemView = Ember.View.extend({
 Notes.initialize();
 
 //** Templates **/
-Ember.TEMPLATES['applicationTemplate'] = Ember.Handlebars.compile('' +
+Ember.TEMPLATES['application'] = Ember.Handlebars.compile('' +
     '{{outlet notes}}{{outlet selectedNote}}'
 );
 
-Ember.TEMPLATES['notesTemplate'] = Ember.Handlebars.compile('' +
-    '{{view Notes.TextField target="Notes.router" action="createNewNote" classNames="input-small search-query mediumTopPadding" valueBinding="controller.newNoteName"}}' +
+Ember.TEMPLATES['notes'] = Ember.Handlebars.compile('' +
+    '{{view Notes.TextField target="controller" action="createNewNote" classNames="input-small search-query mediumTopPadding" valueBinding="controller.newNoteName"}}' +
     '<button class="btn" {{action createNewNote}}>New Note</button>' +
     '{{view Notes.NoteListView}}'
 );
 
-Ember.TEMPLATES['selectedNoteTemplate'] = Ember.Handlebars.compile('' +
+Ember.TEMPLATES['selectedNote'] = Ember.Handlebars.compile('' +
     '{{#if controller.content}}' +
         '<h1>{{name}}</h1>' +
         '{{view Ember.TextArea valueBinding="value"}}' +

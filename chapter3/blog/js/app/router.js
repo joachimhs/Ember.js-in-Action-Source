@@ -1,3 +1,7 @@
+Blog.Router = Ember.Router.extend({
+    location: 'hash'
+});
+
 Blog.Router.map(function(match) {
     match("/").to("index");
     match("/blog").to("blogs", function(match) {
