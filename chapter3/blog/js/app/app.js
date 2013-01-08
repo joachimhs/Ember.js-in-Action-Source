@@ -40,5 +40,5 @@ Blog.Adapter = DS.Adapter.create({
 
 Blog.store = DS.Store.create({
     adapter:  Blog.Adapter,
-    revision: 4
+    revision: 11
 });
