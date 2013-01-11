@@ -13,19 +13,20 @@ Blog.Router.map(function(match) {
 
 Blog.IndexRoute = Ember.Route.extend({
     redirect: function() {
-        this.transitionTo('blogIndex');
+        console.log('indexRoute');
+        this.transitionTo('blogs.blogIndex');
     }
 });
 
-Blog.BlogIndexRoute = Ember.Route.extend({
-    setupControllers: function(controller) {
+Blog.BlogsBlogIndexRoute = Ember.Route.extend({
+    setupController: function(controller) {
         console.log('Blog.BlogsRoute setupControllers');
         controller.set('content', Blog.BlogPost.find());
     }
 });
 
-Blog.BlogPostRoute = Ember.Route.extend({
-    setupControllers: function(controller, model) {
+Blog.BlogsBlogPostRoute = Ember.Route.extend({
+    setupController: function(controller, model) {
         console.log('Blog.BlogPostRoute setupControllers');
         controller.set('content', model);
     }

@@ -8,13 +8,13 @@ Notes.Router.map(function (match) {
 });
 
 Notes.NotesRoute = Ember.Route.extend({
-    setupControllers: function(controller) {
+    setupController: function(controller) {
         controller.set('content', []);
         var selectedNoteController = this.controllerFor('selectedNote');
         selectedNoteController.set('notesController', controller);
     },
 
-    renderTemplates: function() {
+    renderTemplate: function() {
         this.render('notes', {
             outlet: 'notes'
         });
@@ -55,7 +55,8 @@ Notes.NotesController = Ember.ArrayController.extend({
         }
     },
 
-    doDeleteNote: function() {
+    doDeleteNote: function(note) {
+        console.log(note.get('name'));
         $("#confirmDeleteConfirmDialog").modal({show: true});
     },
 
@@ -104,9 +105,9 @@ Notes.NoteListView = Ember.View.extend({
 
 Notes.NoteListItemView = Ember.View.extend({
     template: Ember.Handlebars.compile('' +
-        '{{name}}' +
+        '{{this}} - {{name}}' +
         '{{#if view.isSelected}}' +
-            '<button {{action doDeleteNote}} class="btn btn-mini floatRight btn-danger smallMarginBottom">Delete</button>' +
+            '<button {{action doDeleteNote this}} class="btn btn-mini floatRight btn-danger smallMarginBottom">Delete</button>' +
         '{{/if}}'),
 
     classNames: ['pointer', 'noteListItem'],

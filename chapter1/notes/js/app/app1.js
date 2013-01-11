@@ -8,13 +8,13 @@ Notes.Router.map(function (match) {
 });
 
 Notes.NotesRoute = Ember.Route.extend({
-    setupControllers: function(controller) {
+    setupController: function(controller) {
         controller.set('content', []);
         var selectedNoteController = this.controllerFor('selectedNote');
         selectedNoteController.set('notesController', controller);
     },
 
-    renderTemplates: function() {
+    renderTemplate: function() {
         this.render('notes', {
             outlet: 'notes'
         });

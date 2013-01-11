@@ -233,7 +233,7 @@ DS.ManyArray = DS.RecordArray.extend({
     // Map the array of record objects into an array of  client ids.
     added = added.map(function(record) {
       Ember.assert("You can only add records of " + (get(this, 'type') && get(this, 'type').toString()) + " to this relationship.", !get(this, 'type') || (get(this, 'type') === record.constructor));
-      return get(record, 'reference');
+      return get(record, '_reference');
     }, this);
 
     this._super(index, removed, added);
@@ -1081,7 +1081,7 @@ DS.Store = Ember.Object.extend(DS._Mappable, {
 
     @property {DS.Adapter|String}
   */
-  adapter: 'DS.Adapter',
+  adapter: 'DS.RESTAdapter',
 
   /**
     @private
@@ -1355,6 +1355,18 @@ DS.Store = Ember.Object.extend(DS._Mappable, {
     else { throw "Adapter is either null or does not implement `find` method"; }
 
     return record;
+  },
+
+  reloadRecord: function(record) {
+    var type = record.constructor,
+        adapter = this.adapterForType(type),
+        id = get(record, 'id');
+
+    Ember.assert("You cannot update a record without an ID", id);
+    Ember.assert("You tried to update a record but you have no adapter (for " + type + ")", adapter);
+    Ember.assert("You tried to update a record but your adapter does not implement `find`", adapter.find);
+
+    adapter.find(this, type, id);
   },
 
   /**
@@ -2273,7 +2285,7 @@ DS.Store = Ember.Object.extend(DS._Mappable, {
     @param {DS.Model} record
   */
   removeFromRecordArrays: function(record) {
-    var reference = get(record, 'reference');
+    var reference = get(record, '_reference');
     var recordArrays = this.recordArraysForClientId(reference.clientId);
 
     recordArrays.forEach(function(array) {
@@ -2695,7 +2707,7 @@ DS.Store.reopenClass({
 
 (function() {
 var get = Ember.get, set = Ember.set, guidFor = Ember.guidFor,
-    arrayMap = Ember.ArrayPolyfills.map;
+    once = Ember.run.once, arrayMap = Ember.ArrayPolyfills.map;
 
 /**
   This file encapsulates the various states that a record can transition
@@ -2897,6 +2909,7 @@ var updateRecordArrays = function(manager) {
 
 DS.State = Ember.State.extend({
   isLoaded: stateProperty,
+  isReloading: stateProperty,
   isDirty: stateProperty,
   isSaving: stateProperty,
   isDeleted: stateProperty,
@@ -3167,6 +3180,7 @@ var states = {
   rootState: Ember.State.create({
     // FLAGS
     isLoaded: false,
+    isReloading: false,
     isDirty: false,
     isSaving: false,
     isDeleted: false,
@@ -3244,6 +3258,32 @@ var states = {
         })
       }),
 
+      reloading: DS.State.create({
+        // FLAGS
+        isReloading: true,
+
+        // TRANSITIONS
+        enter: function(manager) {
+          var record = get(manager, 'record'),
+              store = get(record, 'store');
+
+          store.reloadRecord(record);
+        },
+
+        exit: function(manager) {
+          var record = get(manager, 'record');
+
+          once(record, 'trigger', 'didReload');
+        },
+
+        // EVENTS
+        loadedData: didChangeData,
+
+        materializingData: function(manager) {
+          manager.transitionTo('loaded.materializing');
+        }
+      }),
+
       // If there are no local changes to a record, it remains
       // in the `saved` state.
       saved: DS.State.create({
@@ -3253,6 +3293,10 @@ var states = {
 
         didChangeData: didChangeData,
         loadedData: didChangeData,
+
+        reloadRecord: function(manager) {
+          manager.transitionTo('loaded.reloading');
+        },
 
         materializingData: function(manager) {
           manager.transitionTo('loaded.materializing');
@@ -3479,6 +3523,7 @@ var retrieveFromCurrentState = Ember.computed(function(key) {
 
 DS.Model = Ember.Object.extend(Ember.Evented, LoadPromise, {
   isLoaded: retrieveFromCurrentState,
+  isReloading: retrieveFromCurrentState,
   isDirty: retrieveFromCurrentState,
   isSaving: retrieveFromCurrentState,
   isDeleted: retrieveFromCurrentState,
@@ -3510,6 +3555,7 @@ DS.Model = Ember.Object.extend(Ember.Evented, LoadPromise, {
   },
 
   didLoad: Ember.K,
+  didReload: Ember.K,
   didUpdate: Ember.K,
   didCreate: Ember.K,
   didDelete: Ember.K,
@@ -3542,12 +3588,12 @@ DS.Model = Ember.Object.extend(Ember.Evented, LoadPromise, {
     var stateManager = DS.StateManager.create({ record: this });
     set(this, 'stateManager', stateManager);
 
-    this.setup();
+    this._setup();
 
     stateManager.goToState('empty');
   },
 
-  setup: function() {
+  _setup: function() {
     this._relationshipChanges = {};
     this._changesToSync = {};
   },
@@ -3575,6 +3621,17 @@ DS.Model = Ember.Object.extend(Ember.Evented, LoadPromise, {
 
   setProperty: function(key, value, oldValue) {
     this.send('setProperty', { key: key, value: value, oldValue: oldValue });
+  },
+
+  /**
+    Reload the record from the adapter.
+
+    This will only work if the record has already finished loading
+    and has not yet been modified (`isLoaded` but not `isDirty`,
+    or `isSaving`).
+  */
+  reload: function() {
+    this.send('reloadRecord');
   },
 
   deleteRecord: function() {
@@ -3692,7 +3749,7 @@ DS.Model = Ember.Object.extend(Ember.Evented, LoadPromise, {
   },
 
   rollback: function() {
-    this.setup();
+    this._setup();
     this.send('becameClean');
 
     this.suspendRelationshipObservers(function() {
@@ -3756,7 +3813,7 @@ DS.Model = Ember.Object.extend(Ember.Evented, LoadPromise, {
     this.updateRecordArraysLater();
   },
 
-  reference: Ember.computed(function() {
+  _reference: Ember.computed(function() {
     return get(this, 'store').referenceForClientId(get(this, 'clientId'));
   }),
 
@@ -3864,7 +3921,7 @@ DS.Model.reopen({
   },
 
   attributeWillChange: Ember.beforeObserver(function(record, key) {
-    var reference = get(record, 'reference'),
+    var reference = get(record, '_reference'),
         store = get(record, 'store');
 
     record.send('willSetProperty', { reference: reference, store: store, name: key });
@@ -3947,10 +4004,12 @@ DS.belongsTo = function(type, options) {
 
     id = data[key];
 
-    if (typeof id === 'object') {
+    if(!id) {
+      return null;
+    } else if (typeof id === 'object') {
       return store.findByClientId(type, id.clientId);
     } else {
-      return id ? store.find(type, id) : null;
+      return store.find(type, id);
     }
   }).property('data').meta(meta);
 };
@@ -5035,10 +5094,11 @@ Ember.onLoad('Ember.Application', function(Application) {
     });
 
     Application.initializer({
-      name: "giveStoreToControllers",
+      name: "injectStore",
 
       initialize: function(container) {
         container.typeInjection('controller', 'store', 'store:main');
+        container.typeInjection('route', 'store', 'store:main');
       }
     });
   }
@@ -5958,6 +6018,19 @@ DS.Serializer = Ember.Object.extend({
     this.transforms[type] = transform;
   },
 
+  registerEnumTransform: function(type, objects) {
+    var transform = {
+      deserialize: function(deserialized) {
+        return objects.objectAt(deserialized);
+      },
+      serialize: function(serialized) {
+        return objects.indexOf(serialized);
+      },
+      values: objects
+    };
+    this.registerTransform(type, transform);
+  },
+
   /**
     MAPPING CONVENIENCE
   */
@@ -6153,14 +6226,22 @@ DS.JSONTransforms = {
   date: {
     deserialize: function(serialized) {
       var type = typeof serialized;
+      var date = null;
 
       if (type === "string" || type === "number") {
         // this is a fix for Safari 5.1.5 on Mac which does not accept timestamps as yyyy-mm-dd
-        if (type === "string" && serialized.search(/^\d{4}-\d{2}-\d{2}$/) !== -1){
+        if (type === "string" && serialized.search(/^\d{4}-\d{2}-\d{2}$/) !== -1) {
           serialized += "T00:00:00Z";
         }
 
-        return new Date(serialized);
+        date = new Date(serialized);
+
+        // this is a fix for IE8 which does not accept timestamps in ISO 8601 format
+        if (type === "string" && isNaN(date)) {
+          date = new Date(Date.parse(serialized.replace(/\-/ig, '/').replace(/Z$/, '').split('.')[0]));
+        }
+
+        return date;
       } else if (serialized === null || serialized === undefined) {
         // if the value is not present in the data,
         // return undefined, not null.
@@ -6432,8 +6513,12 @@ DS.JSONSerializer = DS.Serializer.extend({
   },
 
   rootForType: function(type) {
+    var typeString = type.toString();
+
+    Ember.assert("Your model must not be anonymous. It was " + type, typeString.charAt(0) !== '(');
+
     // use the last part of the name as the URL
-    var parts = type.toString().split(".");
+    var parts = typeString.split(".");
     var name = parts[parts.length - 1];
     return name.replace(/([A-Z])/g, '_$1').toLowerCase().slice(1);
   }
@@ -6984,6 +7069,36 @@ DS.Adapter = Ember.Object.extend(DS._Mappable, {
   },
 
   /**
+    A public method that allows you to register an enumerated 
+    type on your adapter.  This is useful if you want to utilize
+    a text representation of an integer value.
+
+    Eg: Say you want to utilize "low","medium","high" text strings
+    in your app, but you want to persist those as 0,1,2 in your backend.
+    You would first register the transform on your adapter instance:
+
+    adapter.registerEnumTransform('priority', ['low', 'medium', 'high']);
+
+    You would then refer to the 'priority' DS.attr in your model:
+    App.Task = DS.Model.extend({
+      priority: DS.attr('priority') 
+    });
+
+    And lastly, you would set/get the text representation on your model instance,
+    but the transformed result will be the index number of the type.
+
+    App:   myTask.get('priority') => 'low'
+    Server Response / Load:  { myTask: {priority: 0} }
+
+    @param {String} type of the transform
+    @param {Array} array of String objects to use for the enumerated values.  
+      This is an ordered list and the index values will be used for the transform.
+  */
+  registerEnumTransform: function(attributeType, objects) {
+    get(this, 'serializer').registerEnumTransform(attributeType, objects);
+  },
+
+  /**
     If the globally unique IDs for your records should be generated on the client,
     implement the `generateIdForRecord()` method. This method will be invoked
     each time you create a new record, and the value returned from it will be
@@ -7014,47 +7129,6 @@ DS.Adapter = Ember.Object.extend(DS._Mappable, {
 
   extractId: function(type, data) {
     return get(this, 'serializer').extractId(type, data);
-  },
-
-  extractEmbeddedData: function(store, type, data) {
-    var serializer = get(this, 'serializer');
-
-    type.eachRelationship(function(name, relationship) {
-      var dataListToLoad, dataToLoad, typeToLoad;
-
-      if (relationship.kind === 'hasMany') {
-        this._extractEmbeddedHasMany(store, serializer, type, data, relationship);
-      } else if (relationship.kind === 'belongsTo') {
-        this._extractEmbeddedBelongsTo(store, serializer, type, data, relationship);
-      }
-    }, this);
-  },
-
-  _extractEmbeddedHasMany: function(store, serializer, type, data, relationship) {
-    var dataListToLoad = serializer._extractEmbeddedHasMany(type, data, relationship.key),
-        typeToLoad = relationship.type;
-
-    if (dataListToLoad) {
-      var ids = [];
-
-      for (var i=0, l=dataListToLoad.length; i<l; i++) {
-        var dataToLoad = dataListToLoad[i];
-        ids.push(store.adapterForType(typeToLoad).extractId(typeToLoad, dataToLoad));
-      }
-      serializer.replaceEmbeddedHasMany(type, data, relationship.key, ids);
-      store.loadMany(relationship.type, dataListToLoad);
-    }
-  },
-
-  _extractEmbeddedBelongsTo: function(store, serializer, type, data, relationship) {
-    var dataToLoad = serializer._extractEmbeddedBelongsTo(type, data, relationship.key),
-        typeToLoad = relationship.type;
-
-    if (dataToLoad) {
-      var id = store.adapterForType(typeToLoad).extractId(typeToLoad, dataToLoad);
-      serializer.replaceEmbeddedBelongsTo(type, data, relationship.key, id);
-      store.load(relationship.type, dataToLoad);
-    }
   },
 
   groupByType: function(enumerable) {
@@ -7396,7 +7470,7 @@ DS.RESTAdapter = DS.Adapter.extend({
   },
 
   shouldSave: function(record) {
-    var reference = get(record, 'reference');
+    var reference = get(record, '_reference');
 
     return !reference.parent;
   },
@@ -7430,7 +7504,7 @@ DS.RESTAdapter = DS.Adapter.extend({
       this.dirtyRecordsForRecordChange(dirtySet, embeddedRecord);
     }, this);
 
-    var reference = record.get('reference');
+    var reference = record.get('_reference');
 
     if (reference.parent) {
       var store = get(record, 'store');

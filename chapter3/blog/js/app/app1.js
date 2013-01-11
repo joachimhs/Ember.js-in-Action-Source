@@ -17,7 +17,7 @@ Blog.IndexRoute = Ember.Route.extend({
 });
 
 Blog.BlogIndexRoute = Ember.Route.extend({
-    setupControllers: function(controller) {
+    setupController: function(controller) {
         console.log('Blog.BlogsRoute setupControllers');
         controller.set('content', Blog.BlogPost.find());
     }

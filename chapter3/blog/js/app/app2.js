@@ -1,7 +1,7 @@
 var Blog = Ember.Application.create({
 });
 
-Blog.BlogPostController = Ember.ObjectController.extend({
+Blog.BlogsBlogPostController = Ember.ObjectController.extend({
     content: null,
 
     contentObserver: function() {
@@ -35,19 +35,19 @@ Blog.Router.map(function(match) {
 
 Blog.IndexRoute = Ember.Route.extend({
     redirect: function() {
-        this.transitionTo('blogIndex');
+        this.transitionTo('blogs.blogIndex');
     }
 });
 
-Blog.BlogIndexRoute = Ember.Route.extend({
-    setupControllers: function(controller) {
+Blog.BlogsBlogIndexRoute = Ember.Route.extend({
+    setupController: function(controller) {
         console.log('Blog.BlogsRoute setupControllers');
         controller.set('content', Blog.BlogPost.find());
     }
 });
 
-Blog.BlogPostRoute = Ember.Route.extend({
-    setupControllers: function(controller, model) {
+Blog.BlogsBlogPostRoute = Ember.Route.extend({
+    setupController: function(controller, model) {
         console.log('Blog.BlogPostRoute setupControllers');
         controller.set('content', model);
     }
@@ -57,11 +57,11 @@ Blog.ApplicationView = Ember.View.extend({
     elementId: 'mainArea'
 });
 
-Blog.BlogIndexView = Ember.View.extend({
+Blog.BlogsBlogIndexView = Ember.View.extend({
     elementId: 'blogsArea'
 });
 
-Blog.BlogPostView = Ember.View.extend({
+Blog.BlogsBlogPostView = Ember.View.extend({
     elementId: 'blogPostArea'
 });
 
@@ -74,17 +74,17 @@ Ember.TEMPLATES['application'] = Ember.Handlebars.compile('' +
     '{{outlet}}'
 );
 
-Ember.TEMPLATES['blogIndex'] = Ember.Handlebars.compile('' +
+Ember.TEMPLATES['blogs/blogIndex'] = Ember.Handlebars.compile('' +
     '{{#each content}}' +
         '<h1>{{postTitle}}</h1>' +
         '<div class="postDate">{{formattedDate}}</div>' +
         '{{postLongIntro}}<br />' +
-        '<br />{{#linkTo "blogPost" this}}Full Article ->{{/linkTo}}' +
+        '<br />{{#linkTo "blogs.blogPost" this}}Full Article ->{{/linkTo}}' +
         '<hr class="blogSeperator"/>' +
     '{{/each}}'
 );
 
-Ember.TEMPLATES['blogPost'] = Ember.Handlebars.compile('' +
+Ember.TEMPLATES['blogs/blogPost'] = Ember.Handlebars.compile('' +
     '<div class="postDate">{{formattedDate}}</div>' +
     '{{markdown}}'
 );

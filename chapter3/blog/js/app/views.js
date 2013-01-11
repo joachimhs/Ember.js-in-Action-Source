@@ -2,11 +2,11 @@ Blog.ApplicationView = Ember.View.extend({
     elementId: 'mainArea'
 });
 
-Blog.BlogIndexView = Ember.View.extend({
+Blog.BlogsBlogIndexView = Ember.View.extend({
     elementId: 'blogsArea'
 });
 
-Blog.BlogPostView = Ember.View.extend({
+Blog.BlogsBlogPostView = Ember.View.extend({
     elementId: 'blogPostArea'
 });
 

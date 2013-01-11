@@ -1,8 +1,8 @@
 Blog.ApplicationController = Ember.Controller.extend({});
 
-Blog.BlogIndexControlelr = Ember.ArrayController.extend({});
+Blog.BlogsBlogIndexControlelr = Ember.ArrayController.extend({});
 
-Blog.BlogPostController = Ember.ObjectController.extend({
+Blog.BlogsBlogPostController = Ember.ObjectController.extend({
     content: null,
 
     contentObserver: function() {

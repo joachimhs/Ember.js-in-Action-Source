@@ -1,6 +1,35 @@
 var Blog = Ember.Application.create({});
 
-Blog.BlogPostController = Ember.ObjectController.extend({
+Blog.Router.map(function(match) {
+    match("/").to("index");
+    match("/blog").to("blogs", function(match) {
+        match('/posts').to('blogIndex');
+        match('/post/:blog_post_id').to('blogPost')
+    });
+    match("/about").to("about");
+});
+
+Blog.IndexRoute = Ember.Route.extend({
+    redirect: function() {
+        this.transitionTo('blogs.blogIndex');
+    }
+});
+
+Blog.BlogsBlogIndexRoute = Ember.Route.extend({
+    setupController: function(controller) {
+        console.log('Blog.BlogsRoute setupControllers');
+        controller.set('content', Blog.BlogPost.find());
+    }
+});
+
+Blog.BlogsBlogPostRoute = Ember.Route.extend({
+    setupController: function(controller, model) {
+        console.log('Blog.BlogPostRoute setupControllers');
+        controller.set('content', model);
+    }
+});
+
+Blog.BlogsBlogPostController = Ember.ObjectController.extend({
     content: null,
 
     contentObserver: function() {
@@ -21,48 +50,23 @@ Blog.BlogPostController = Ember.ObjectController.extend({
     }.observes('content')
 });
 
-Blog.Router = Ember.Router.extend({
-    location: 'hash'
-});
-
-Blog.Router.map(function(match) {
-    match("/").to("index");
-    match("/blog").to("blogs", function(match) {
-        match('/posts').to('blogIndex');
-        match('/post/:blog_post_id').to('blogPost')
-    });
-    match("/about").to("about");
-});
-
-Blog.IndexRoute = Ember.Route.extend({
-    redirect: function() {
-        this.transitionTo('blogIndex');
-    }
-});
-
-Blog.BlogIndexRoute = Ember.Route.extend({
-    setupControllers: function(controller) {
-        console.log('Blog.BlogsRoute setupControllers');
-        controller.set('content', Blog.BlogPost.find());
-    }
-});
-
-Blog.BlogPostRoute = Ember.Route.extend({
-    setupControllers: function(controller, model) {
-        console.log('Blog.BlogPostRoute setupControllers');
-        controller.set('content', model);
-    }
-});
-
 Blog.ApplicationView = Ember.View.extend({
+    init: function() {
+        this._super();
+        console.log('appView init');
+    },
     elementId: 'mainArea'
 });
 
-Blog.BlogIndexView = Ember.View.extend({
-    elementId: 'blogsArea'
+Blog.BlogsBlogIndexView = Ember.View.extend({
+    elementId: 'blogsArea',
+    init: function() {
+        this._super();
+        console.log('init');
+    }
 });
 
-Blog.BlogPostView = Ember.View.extend({
+Blog.BlogsBlogPostView = Ember.View.extend({
     elementId: 'blogPostArea'
 });
 
@@ -73,27 +77,27 @@ Blog.AboutView = Ember.View.extend({
 Ember.TEMPLATES['application'] = Ember.Handlebars.compile('' +
     '<h1>Ember.js in Action Blog</h1>' +
     '<div class="headerLinks">' +
-        '{{#linkTo "blogIndex"}}Home{{/linkTo}}<span class="middot">&middot;' +
+        '{{#linkTo "blogs.blogIndex"}}Home{{/linkTo}}<span class="middot">&middot;' +
         '{{#linkTo "about"}}About{{/linkTo}}' +
     '</div>' +
     '{{outlet}}'
 );
 
-Ember.TEMPLATES['blogIndex'] = Ember.Handlebars.compile('' +
+Ember.TEMPLATES['blogs/blogIndex'] = Ember.Handlebars.compile('' +
     '{{#each content}}' +
         '<h1>{{postTitle}}</h1>' +
         '<div class="postDate">{{formattedDate}}</div>' +
         '{{postLongIntro}}<br />' +
-        '<br />{{#linkTo "blogPost" this}}Full Article ->{{/linkTo}}' +
+        '<br />{{#linkTo "blogs.blogPost" this}}Full Article ->{{/linkTo}}' +
         '<hr class="blogSeperator"/>' +
     '{{/each}}'
 );
 
-Ember.TEMPLATES['blogPost'] = Ember.Handlebars.compile('' +
+Ember.TEMPLATES['blogs/blogPost'] = Ember.Handlebars.compile('' +
     '<div class="postDate">{{formattedDate}}</div>' +
-    '<br />{{#linkTo "blogIndex"}}&lt; back{{/linkTo}}' +
+    '<br />{{#linkTo "blogs.blogIndex"}}&lt; back{{/linkTo}}' +
     '{{markdown}}' +
-    '<br />{{#linkTo "blogIndex"}}&lt; back{{/linkTo}}'
+    '<br />{{#linkTo "blogs.blogIndex"}}&lt; back{{/linkTo}}'
 );
 
 Ember.TEMPLATES['about'] = Ember.Handlebars.compile('' +
