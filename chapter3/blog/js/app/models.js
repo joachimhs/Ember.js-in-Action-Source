@@ -20,7 +20,3 @@ Blog.BlogPost = DS.Model.extend({
     }.property('id').cacheable(),
     markdown: null
 });
-
-Blog.BlogPost.reopenClass({
-    url: '/blogs.json'
-});

@@ -2,30 +2,35 @@ Blog.Router = Ember.Router.extend({
     location: 'hash'
 });
 
-Blog.Router.map(function(match) {
-    match("/").to("index");
-    match("/blog").to("blogs", function(match) {
-        match('/posts').to('blogIndex');
-        match('/post/:blog_post_id').to('blogPost')
+Blog.Router.map(function() {
+    this.route("index", {path: "/"});
+    this.resource("blog", {path: "/blog"}, function() {
+        this.route("blogIndex", {path: '/posts'});
+        this.route("blogPost", {path: '/post/:blog_post_id'});
     });
-    match("/about").to("about");
+    this.route("about", {path: "/about"});
 });
 
 Blog.IndexRoute = Ember.Route.extend({
     redirect: function() {
         console.log('indexRoute');
-        this.transitionTo('blogs.blogIndex');
+        this.transitionTo('blog.blogIndex');
     }
 });
 
-Blog.BlogsBlogIndexRoute = Ember.Route.extend({
-    setupController: function(controller) {
-        console.log('Blog.BlogsRoute setupControllers');
-        controller.set('content', Blog.BlogPost.find());
+Blog.BlogBlogIndexRoute = Ember.Route.extend({
+    model: function() {
+        console.log('BlogBlogIndexRoute model');
+        return Blog.BlogPost.find();
     }
+
+    //setupController: function(controller) {
+    //    console.log('Blog.BlogsRoute setupControllers');
+    //    controller.set('content', Blog.BlogPost.find());
+    //}
 });
 
-Blog.BlogsBlogPostRoute = Ember.Route.extend({
+Blog.BlogBlogPostRoute = Ember.Route.extend({
     setupController: function(controller, model) {
         console.log('Blog.BlogPostRoute setupControllers');
         controller.set('content', model);
