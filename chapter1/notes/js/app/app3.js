@@ -3,8 +3,8 @@ var Notes = Ember.Application.create({LOG_TRANSITIONS: true});
 /** Router **/
 Notes.Router = Ember.Router.extend({});
 
-Notes.Router.map(function (match) {
-    match('/').to('notes');
+Notes.Router.map(function () {
+    this.route('notes', {path: "/"});
 });
 
 Notes.NotesRoute = Ember.Route.extend({
@@ -12,19 +12,6 @@ Notes.NotesRoute = Ember.Route.extend({
         controller.set('content', []);
         var selectedNoteController = this.controllerFor('selectedNote');
         selectedNoteController.set('notesController', controller);
-    },
-
-    renderTemplate: function() {
-        this.render('notes', {
-            outlet: 'notes'
-        });
-
-        var selectedNoteController = this.controllerFor('selectedNote');
-
-        this.render('selectedNote', {
-            outlet: 'selectedNote',
-            controller: selectedNoteController
-        });
     }
 });
 
@@ -86,7 +73,7 @@ Notes.NotesView = Ember.View.extend({
 });
 
 Notes.SelectedNoteView = Ember.View.extend({
-    elementId: 'selectedNote',
+    elementId: 'selectedNote'
 });
 
 Notes.TextField = Ember.TextField.extend(Ember.TargetActionSupport, {
@@ -105,7 +92,7 @@ Notes.NoteListView = Ember.View.extend({
 
 Notes.NoteListItemView = Ember.View.extend({
     template: Ember.Handlebars.compile('' +
-        '{{this}} - {{name}}' +
+        '{{name}}' +
         '{{#if view.isSelected}}' +
             '<button {{action doDeleteNote this}} class="btn btn-mini floatRight btn-danger smallMarginBottom">Delete</button>' +
         '{{/if}}'),
@@ -155,7 +142,8 @@ Notes.initialize();
 
 //** Templates **/
 Ember.TEMPLATES['application'] = Ember.Handlebars.compile('' +
-    '{{outlet notes}}{{outlet selectedNote}}'
+    '{{outlet}}' +
+    '{{render selectedNote}}'
 );
 
 Ember.TEMPLATES['confirmDialog'] = Ember.Handlebars.compile(
@@ -196,7 +184,7 @@ Ember.TEMPLATES['notes'] = Ember.Handlebars.compile('' +
     '}}'
 );
 
-Ember.TEMPLATES['selectedNoteTemplate'] = Ember.Handlebars.compile('' +
+Ember.TEMPLATES['selectedNote'] = Ember.Handlebars.compile('' +
     '{{#if controller.content}}' +
         '<h1>{{name}}</h1>' +
         '{{view Ember.TextArea valueBinding="value"}}' +

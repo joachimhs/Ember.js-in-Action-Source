@@ -1,10 +1,8 @@
 var Notes = Ember.Application.create();
 
 /** Router **/
-Notes.Router = Ember.Router.extend({});
-
-Notes.Router.map(function (match) {
-    match('/').to('notes');
+Notes.Router.map(function () {
+    this.route('notes', {path: "/"});
 });
 
 Notes.NotesRoute = Ember.Route.extend({
@@ -12,19 +10,6 @@ Notes.NotesRoute = Ember.Route.extend({
         controller.set('content', []);
         var selectedNoteController = this.controllerFor('selectedNote');
         selectedNoteController.set('notesController', controller);
-    },
-
-    renderTemplate: function() {
-        this.render('notes', {
-            outlet: 'notes'
-        });
-
-        var selectedNoteController = this.controllerFor('selectedNote');
-
-        this.render('selectedNote', {
-            outlet: 'selectedNote',
-            controller: selectedNoteController
-        });
     }
 });
 
@@ -32,7 +17,6 @@ Notes.NotesRoute = Ember.Route.extend({
 Notes.ApplicationController = Ember.Controller.extend({});
 
 Notes.NotesController = Ember.ArrayController.extend({
-    content: [],
     newNoteName: null,
 
     createNewNote: function() {
@@ -53,9 +37,7 @@ Notes.SelectedNoteController = Ember.ObjectController.extend({
 });
 
 //** Views **/
-Notes.ApplicationView = Ember.View.extend({
-    templateName: 'applicationTemplate'
-});
+Notes.ApplicationView = Ember.View.extend({});
 
 Notes.NotesView = Ember.View.extend({
     elementId: 'notes',
@@ -99,18 +81,15 @@ Notes.initialize();
 
 //** Templates **/
 Ember.TEMPLATES['application'] = Ember.Handlebars.compile('' +
-    '{{outlet notes}}{{outlet selectedNote}}'
+    '{{outlet}}' +
+    '{{render selectedNote}}'
 );
 
 Ember.TEMPLATES['notes'] = Ember.Handlebars.compile('' +
     '{{view Notes.TextField target="controller" action="createNewNote" classNames="input-small search-query mediumTopPadding" valueBinding="controller.newNoteName"}}' +
-    '<button class="btn" {{action createNewNote}}>New Note</button>' +
+        '<button class="btn" {{action createNewNote}}>New Note</button>' +
     '{{view Notes.NoteListView}}'
 );
 
-Ember.TEMPLATES['selectedNote'] = Ember.Handlebars.compile('' +
-    '{{#if controller.content}}' +
-        '<h1>{{name}}</h1>' +
-        '{{view Ember.TextArea valueBinding="value"}}' +
-    '{{/if}}'
+Ember.TEMPLATES['selectedNote'] = Ember.Handlebars.compile(''
 );

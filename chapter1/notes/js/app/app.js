@@ -1,10 +1,8 @@
 var Notes = Ember.Application.create({LOG_TRANSITIONS: true});
 
 /** Router **/
-Notes.Router = Ember.Router.extend({});
-
-Notes.Router.map(function (match) {
-    match('/').to('notes');
+Notes.Router.map(function () {
+    this.route('notes', {path: "/"});
 });
 
 Notes.NotesRoute = Ember.Route.extend({
@@ -12,19 +10,6 @@ Notes.NotesRoute = Ember.Route.extend({
         controller.set('content', []);
         var selectedNoteController = this.controllerFor('selectedNote');
         selectedNoteController.set('notesController', controller);
-    },
-
-    renderTemplate: function() {
-        this.render('notes', {
-            outlet: 'notes'
-        });
-
-        var selectedNoteController = this.controllerFor('selectedNote');
-
-        this.render('selectedNote', {
-            outlet: 'selectedNote',
-            controller: selectedNoteController
-        });
     }
 });
 
@@ -38,7 +23,7 @@ Notes.NotesController = Ember.ArrayController.extend({
     createNewNote: function() {
         var content = this.get('content');
         var newNoteName = this.get('newNoteName');
-        var unique = true;
+        var unique = newNoteName != null && newNoteName.length > 1;
         content.forEach(function(note) {
             if (newNoteName === note.get('name')) {
                 unique = false; return;
@@ -51,7 +36,7 @@ Notes.NotesController = Ember.ArrayController.extend({
             );
             this.set('newNoteName', null);
         } else {
-            alert('Note must have a unique name');
+            alert('Note must have a unique name of at least 2 characters!');
         }
     },
 
@@ -81,13 +66,11 @@ Notes.SelectedNoteController = Ember.ObjectController.extend({
 //** Views **/
 Notes.NotesView = Ember.View.extend({
     elementId: 'notes',
-    templateName: 'notesTemplate',
     classNames: ['azureBlueBackground', 'azureBlueBorderThin']
 });
 
 Notes.SelectedNoteView = Ember.View.extend({
-    elementId: 'selectedNote',
-    templateName: 'selectedNoteTemplate'
+    elementId: 'selectedNote'
 });
 
 Notes.TextField = Ember.TextField.extend(Ember.TargetActionSupport, {
@@ -100,7 +83,7 @@ Notes.NoteListView = Ember.View.extend({
     elementId: 'noteList',
     template: Ember.Handlebars.compile('' +
         '{{#each controller}}' +
-        '{{view Notes.NoteListItemView contentBinding="this"}}' +
+            '{{view Notes.NoteListItemView contentBinding="this"}}' +
         '{{/each}}')
 });
 
@@ -108,7 +91,7 @@ Notes.NoteListItemView = Ember.View.extend({
     template: Ember.Handlebars.compile('' +
         '{{name}}' +
         '{{#if view.isSelected}}' +
-        '<button {{action doDeleteNote}} class="btn btn-mini floatRight btn-danger smallMarginBottom">Delete</button>' +
+            '<button {{action doDeleteNote}} class="btn btn-mini floatRight btn-danger smallMarginBottom">Delete</button>' +
         '{{/if}}'),
 
     classNames: ['pointer', 'noteListItem'],
@@ -156,31 +139,32 @@ Notes.initialize();
 
 //** Templates **/
 Ember.TEMPLATES['application'] = Ember.Handlebars.compile('' +
-    '{{outlet notes}}{{outlet selectedNote}}'
+    '{{outlet}}' +
+    '{{render selectedNote}}'
 );
 
 Ember.TEMPLATES['confirmDialog'] = Ember.Handlebars.compile(
     '<div class="modal-header centerAlign">' +
         '<button type="button" class="close" data-dismiss="modal" class="floatRight">×</button>' +
         '<h1 class="centerAlign">{{view.header}}</h1>' +
-        '</div>' +
-        '<div class="modal-body">' +
+    '</div>' +
+    '<div class="modal-body">' +
         '{{view.message}}' +
-        '</div>' +
-        '<div class="modal-footer">' +
+    '</div>' +
+    '<div class="modal-footer">' +
         '{{#if view.cancelAction}}' +
-        '{{view Notes.BootstrapButton ' +
-        'contentBinding="view.cancelButtonLabel" ' +
-        'actionBinding="view.cancelAction" ' +
-        'targetBinding="view.target"}}' +
+            '{{view Notes.BootstrapButton ' +
+                'contentBinding="view.cancelButtonLabel" ' +
+                'actionBinding="view.cancelAction" ' +
+                'targetBinding="view.target"}}' +
         '{{/if}}' +
         '{{#if view.okAction}}' +
-        '{{view Notes.BootstrapButton ' +
-        'contentBinding="view.okButtonLabel" ' +
-        'actionBinding="view.okAction" ' +
-        'targetBinding="view.target"}}' +
+            '{{view Notes.BootstrapButton ' +
+                'contentBinding="view.okButtonLabel" ' +
+                'actionBinding="view.okAction" ' +
+                'targetBinding="view.target"}}' +
         '{{/if}}' +
-        '</div>'
+    '</div>'
 );
 
 Ember.TEMPLATES['notes'] = Ember.Handlebars.compile('' +
@@ -188,19 +172,19 @@ Ember.TEMPLATES['notes'] = Ember.Handlebars.compile('' +
     '<button class="btn" {{action createNewNote}}>New Note</button>' +
     '{{view Notes.NoteListView}}' +
     '{{view Notes.ConfirmDialogView ' +
-    'elementId="confirmDeleteConfirmDialog" ' +
-    'okAction="doConfirmDelete" ' +
-    'cancelAction="doCancelDelete" ' +
-    'target="controller" ' +
-    'header="Delete selected note?" ' +
-    'message="Are you sure you want to delete the selected Note? This action cannot be be undone!"' +
+        'elementId="confirmDeleteConfirmDialog" ' +
+        'okAction="doConfirmDelete" ' +
+        'cancelAction="doCancelDelete" ' +
+        'target="controller" ' +
+        'header="Delete selected note?" ' +
+        'message="Are you sure you want to delete the selected Note? This action cannot be be undone!"' +
     '}}'
 );
 
-Ember.TEMPLATES['selectedNoteTemplate'] = Ember.Handlebars.compile('' +
+Ember.TEMPLATES['selectedNote'] = Ember.Handlebars.compile('' +
     '{{#if controller.content}}' +
-    '<h1>{{name}}</h1>' +
-    '{{view Ember.TextArea valueBinding="value"}}' +
+        '<h1>{{name}}</h1>' +
+        '{{view Ember.TextArea valueBinding="value"}}' +
     '{{/if}}'
 );
 

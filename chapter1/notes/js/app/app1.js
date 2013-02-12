@@ -1,10 +1,8 @@
 var Notes = Ember.Application.create();
 
 /** Router **/
-Notes.Router = Ember.Router.extend();
-
-Notes.Router.map(function (match) {
-    match('/').to('notes');
+Notes.Router.map(function () {
+    this.route('notes', {path: "/"});
 });
 
 Notes.NotesRoute = Ember.Route.extend({
@@ -12,19 +10,6 @@ Notes.NotesRoute = Ember.Route.extend({
         controller.set('content', []);
         var selectedNoteController = this.controllerFor('selectedNote');
         selectedNoteController.set('notesController', controller);
-    },
-
-    renderTemplate: function() {
-        this.render('notes', {
-            outlet: 'notes'
-        });
-
-        var selectedNoteController = this.controllerFor('selectedNote');
-
-        this.render('selectedNote', {
-            outlet: 'selectedNote',
-            controller: selectedNoteController
-        });
     }
 });
 
@@ -56,7 +41,8 @@ Notes.initialize();
 
 //** Templates **/
 Ember.TEMPLATES['application'] = Ember.Handlebars.compile('' +
-    '{{outlet notes}}{{outlet selectedNote}}'
+    '{{outlet}}' +
+    '{{render selectedNote}}'
 );
 
 Ember.TEMPLATES['notes'] = Ember.Handlebars.compile(''
