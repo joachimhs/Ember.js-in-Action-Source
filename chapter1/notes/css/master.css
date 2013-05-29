@@ -14,7 +14,7 @@ body {
     border-radius: 8px;
     position: absolute;
     left: 10px;
-    width: 220px;
+    width: 230px;
     top: 10px;
     bottom:10px;
     overflow: scroll;
@@ -24,7 +24,7 @@ body {
 #selectedNote {
     background: #fff;
     position: absolute;
-    left: 260px;
+    left: 270px;
     right: 10px;
     top: 10px;
     bottom: 10px;

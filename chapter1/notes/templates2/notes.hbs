@@ -1,0 +1,7 @@
+{{view Notes.TextField target="controller"
+    action="createNewNote"
+    classNames="input-small search-query mediumTopPadding"
+    valueBinding="controller.newNoteName"}}
+
+    <button class="btn" {{action createNewNote}}>New Note</button>
+{{view Notes.NoteListView}}

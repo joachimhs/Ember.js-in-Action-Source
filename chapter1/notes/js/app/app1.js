@@ -1,4 +1,5 @@
-var Notes = Ember.Application.create();
+var Notes = Ember.Application.create({
+});
 
 /** Router **/
 Notes.Router.map(function () {
@@ -37,16 +38,8 @@ Notes.SelectedNoteView = Ember.View.extend({
     elementId: 'selectedNote'
 });
 
-Notes.initialize();
-
 //** Templates **/
 Ember.TEMPLATES['application'] = Ember.Handlebars.compile('' +
     '{{outlet}}' +
     '{{render selectedNote}}'
-);
-
-Ember.TEMPLATES['notes'] = Ember.Handlebars.compile(''
-);
-
-Ember.TEMPLATES['selectedNote'] = Ember.Handlebars.compile(''
 );

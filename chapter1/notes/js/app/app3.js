@@ -1,4 +1,34 @@
-var Notes = Ember.Application.create({LOG_TRANSITIONS: true});
+Ember.Application.reopen({
+    init: function() {
+        this._super();
+
+        this.loadTemplates();
+    },
+
+    templates: [],
+
+    loadTemplates: function() {
+        var app = this,
+            templates = this.get('templates');
+
+        app.deferReadiness();
+
+        var promises = templates.map(function(name) {
+            return Ember.$.get('/templates/'+name+'.hbs').then(function(data) {
+                Ember.TEMPLATES[name] = Ember.Handlebars.compile(data);
+            });
+        });
+
+        Ember.RSVP.all(promises).then(function() {
+            app.advanceReadiness();
+        });
+    }
+});
+
+var Notes = Ember.Application.create({
+    LOG_TRANSITIONS: true,
+    templates: ['application', 'notes', 'confirmDialog', 'selectedNote']
+});
 
 /** Router **/
 Notes.Router = Ember.Router.extend({});
@@ -43,7 +73,6 @@ Notes.NotesController = Ember.ArrayController.extend({
     },
 
     doDeleteNote: function(note) {
-        console.log(note.get('name'));
         $("#confirmDeleteConfirmDialog").modal({show: true});
     },
 
@@ -135,82 +164,4 @@ Notes.BootstrapButton = Ember.View.extend(Ember.TargetActionSupport, {
     },
 
     template: Ember.Handlebars.compile('{{#if view.iconName}}<i {{bindAttr class="view.iconName"}}></i>{{/if}}{{view.content}}')
-});
-
-
-Notes.initialize();
-
-//** Templates **/
-Ember.TEMPLATES['application'] = Ember.Handlebars.compile('' +
-    '{{outlet}}' +
-    '{{render selectedNote}}'
-);
-
-Ember.TEMPLATES['confirmDialog'] = Ember.Handlebars.compile(
-    '<div class="modal-header centerAlign">' +
-        '<button type="button" class="close" data-dismiss="modal" class="floatRight">×</button>' +
-        '<h1 class="centerAlign">{{view.header}}</h1>' +
-    '</div>' +
-    '<div class="modal-body">' +
-        '{{view.message}}' +
-    '</div>' +
-    '<div class="modal-footer">' +
-        '{{#if view.cancelAction}}' +
-            '{{view Notes.BootstrapButton ' +
-                'contentBinding="view.cancelButtonLabel" ' +
-                'actionBinding="view.cancelAction" ' +
-                'targetBinding="view.target"}}' +
-        '{{/if}}' +
-        '{{#if view.okAction}}' +
-            '{{view Notes.BootstrapButton ' +
-                'contentBinding="view.okButtonLabel" ' +
-                'actionBinding="view.okAction" ' +
-                'targetBinding="view.target"}}' +
-        '{{/if}}' +
-    '</div>'
-);
-
-Ember.TEMPLATES['notes'] = Ember.Handlebars.compile('' +
-    '{{view Notes.TextField target="controller" action="createNewNote" classNames="input-small search-query mediumTopPadding" valueBinding="controller.newNoteName"}}' +
-    '<button class="btn" {{action createNewNote}}>New Note</button>' +
-    '{{view Notes.NoteListView}}' +
-    '{{view Notes.ConfirmDialogView ' +
-        'elementId="confirmDeleteConfirmDialog" ' +
-        'okAction="doConfirmDelete" ' +
-        'cancelAction="doCancelDelete" ' +
-        'target="controller" ' +
-        'header="Delete selected note?" ' +
-        'message="Are you sure you want to delete the selected Note? This action cannot be be undone!"' +
-    '}}'
-);
-
-Ember.TEMPLATES['selectedNote'] = Ember.Handlebars.compile('' +
-    '{{#if controller.content}}' +
-        '<h1>{{name}}</h1>' +
-        '{{view Ember.TextArea valueBinding="value"}}' +
-    '{{/if}}'
-);
-
-Notes.Duration = Ember.Object.extend({
-    durationSeconds: 0,
-
-    durationString: function(key, value) {
-        if (arguments.length === 2 && value) {
-            var valueParts = value.split(":");
-            if (valueParts.length == 3) {
-                var duration = (valueParts[0] * 60 * 60) +
-                    (valueParts[1] * 60) + (valueParts[2] * 1);
-                this.set('durationSeconds', duration);
-            }
-        }
-        var duration = this.get('durationSeconds');
-        var hours   = Math.floor(duration / 3600);
-        var minutes = Math.floor((duration - (hours * 3600)) / 60);
-        var seconds = Math.floor(duration - (minutes * 60) -
-            (hours * 3600));
-
-        //force numbers to have 2 digits: "HH:mm" using slice(-2)
-        return ("0" + hours).slice(-2) + ":" +
-            ("0" + minutes).slice(-2) + ":" + ("0" + seconds).slice(-2);
-    }.property('durationSeconds').cacheable()
 });

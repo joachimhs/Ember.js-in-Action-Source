@@ -1,4 +1,33 @@
-var Notes = Ember.Application.create();
+Ember.Application.reopen({
+    init: function() {
+        this._super();
+
+        this.loadTemplates();
+    },
+
+    templates: [],
+
+    loadTemplates: function() {
+        var app = this,
+            templates = this.get('templates');
+
+        app.deferReadiness();
+
+        var promises = templates.map(function(name) {
+            return Ember.$.get('/templates2/'+name+'.hbs').then(function(data) {
+                Ember.TEMPLATES[name] = Ember.Handlebars.compile(data);
+            });
+        });
+
+        Ember.RSVP.all(promises).then(function() {
+            app.advanceReadiness();
+        });
+    }
+});
+
+var Notes = Ember.Application.create({
+    templates: ['application', 'notes', ]
+});
 
 /** Router **/
 Notes.Router.map(function () {
@@ -76,20 +105,3 @@ Notes.NoteListItemView = Ember.View.extend({
         this.get('controller').set('selectedNote', this.get('content'));
     }
 });
-
-Notes.initialize();
-
-//** Templates **/
-Ember.TEMPLATES['application'] = Ember.Handlebars.compile('' +
-    '{{outlet}}' +
-    '{{render selectedNote}}'
-);
-
-Ember.TEMPLATES['notes'] = Ember.Handlebars.compile('' +
-    '{{view Notes.TextField target="controller" action="createNewNote" classNames="input-small search-query mediumTopPadding" valueBinding="controller.newNoteName"}}' +
-        '<button class="btn" {{action createNewNote}}>New Note</button>' +
-    '{{view Notes.NoteListView}}'
-);
-
-Ember.TEMPLATES['selectedNote'] = Ember.Handlebars.compile(''
-);
