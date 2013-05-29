@@ -8,21 +8,17 @@ Notes.Router.map(function () {
 
 Notes.NotesRoute = Ember.Route.extend({
     setupController: function(controller) {
-        controller.set('content', []);
-        var selectedNoteController = this.controllerFor('selectedNote');
-        selectedNoteController.set('notesController', controller);
     }
 });
 
 /** Controllers **/
 Notes.ApplicationController = Ember.Controller.extend({});
 
-Notes.NotesController = Ember.ArrayController.extend({
-    content: []
-});
+Notes.NotesController = Ember.ArrayController.extend({});
 
 Notes.SelectedNoteController = Ember.ObjectController.extend({
-    contentBinding: 'notesController.selectedNote',
+    needs: ['notes'],
+    contentBinding: 'controllers.notes.selectedNote',
     notesController: null
 });
 
