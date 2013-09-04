@@ -17,7 +17,7 @@
     <script src="js/scripts/ember-1.0.0.js" type="text/javascript" charset="utf-8"></script>
     <script src="js/scripts/ember-data-beta-1.js" type="text/javascript" charset="utf-8"></script>
     <script src="js/scripts/ember-data-localstorage.js" type="text/javascript" charset="utf-8"></script>
-    <script src="js/app/app3.js" type="text/javascript" charset="utf-8"></script>
+    <script src="js/app/app4.js" type="text/javascript" charset="utf-8"></script>
 
     <script type="text/x-handlebars" id="application">
         {{outlet}}
@@ -30,11 +30,12 @@
 
             <div class="list-group" style="margin-top: 10px;">
                 {{#each controller}}
-                {{#linkTo "notes.note" this class="list-group-item"}}
-                {{name}}
+                    {{#linkTo "notes.note" this class="list-group-item"}}
+                        {{name}}
+                        {{#if introduction}}<br />{{introduction}}{{/if}}
 
-                <button class="btn btn-danger btn-xs pull-right" {{action "doDeleteNote" this}}>Delete</button>
-                {{/linkTo}}
+                        <button class="btn btn-danger btn-xs pull-right" {{action "doDeleteNote" this}}>Delete</button>
+                    {{/linkTo}}
 
 
                 {{/each}}
@@ -48,9 +49,11 @@
 
     <script type="text/x-handlebars" id="notes/note">
         <div id="selectedNote">
-            <h1>name: {{name}}</h1>
-            {{view Ember.TextArea valueBinding="value"}}
-            <button class="btn btn-primary form-control mediumTopPadding" {{action "updateNote"}}>Update</button><br />
+            {{#if model}}
+                <h1>name: {{controller.model.name}}</h1>
+                {{view Ember.TextArea valueBinding="value"}}
+                <button class="btn btn-primary form-control mediumTopPadding" {{action "updateNote"}}>Update</button><br />
+            {{/if}}
         </div>
     </script>
 
