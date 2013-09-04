@@ -3,39 +3,59 @@ var Notes = Ember.Application.create({
 
 /** Router **/
 Notes.Router.map(function () {
-    this.route('notes', {path: "/"});
+    this.resource('notes', {path: "/"}, function() {
+		this.route('note', {path: "/note/:note_id"});
+	});
 });
 
 Notes.NotesRoute = Ember.Route.extend({
-    setupController: function(controller) {
-    }
+	model: function() {
+		return this.store.find('note');
+	}
 });
 
-/** Controllers **/
-Notes.ApplicationController = Ember.Controller.extend({});
-
-Notes.NotesController = Ember.ArrayController.extend({});
-
-Notes.SelectedNoteController = Ember.ObjectController.extend({
-    needs: ['notes'],
-    contentBinding: 'controllers.notes.selectedNote',
-    notesController: null
+Notes.NotesNoteRoute = Ember.Route.extend({
+	model: function(note) {
+		return this.store.find('note', note.note_id);
+	}
 });
 
-//** Views **/
-Notes.ApplicationView = Ember.View.extend({});
-
-Notes.NotesView = Ember.View.extend({
-    elementId: 'notes',
-    classNames: ['azureBlueBackground', 'azureBlueBorderThin']
+/** Ember Data **/
+Notes.Note = DS.Model.extend({
+    name: DS.attr('string'),
+	value: DS.attr('string')
 });
 
-Notes.SelectedNoteView = Ember.View.extend({
-    elementId: 'selectedNote'
+Notes.Store = DS.Store.extend({
+    adapter: DS.LSAdapter
 });
 
-//** Templates **/
-Ember.TEMPLATES['application'] = Ember.Handlebars.compile('' +
-    '{{outlet}}' +
-    '{{render selectedNote}}'
-);
+
+Notes.NotesController = Ember.ArrayController.extend({
+	newNoteName: null,
+
+	actions: {
+	    createNewNote: function() {
+	        var content = this.get('content');
+	        var newNoteName = this.get('newNoteName');
+	        var unique = newNoteName != null && newNoteName.length > 1;
+	
+	        content.forEach(function(note) {
+	            if (newNoteName === note.get('name')) {
+	                unique = false; return;
+	            }
+	        });
+
+	        if (unique) {
+				var newNote = this.store.createRecord('note');
+				newNote.set('id', newNoteName);
+				newNote.set('name', newNoteName);
+				newNote.save();
+	
+	            this.set('newNoteName', null);
+	        } else {
+	            alert('Note must have a unique name of at least 2 characters!');
+	        }
+	    }
+	}
+});

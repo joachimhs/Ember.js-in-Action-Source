@@ -1,160 +1,98 @@
-Ember.Application.reopen({
-    init: function() {
-        this._super();
-
-        this.loadTemplates();
-    },
-
-    templates: [],
-
-    loadTemplates: function() {
-        var app = this,
-            templates = this.get('templates');
-
-        app.deferReadiness();
-
-        var promises = templates.map(function(name) {
-            return Ember.$.get('/templates/'+name+'.hbs').then(function(data) {
-                Ember.TEMPLATES[name] = Ember.Handlebars.compile(data);
-            });
-        });
-
-        Ember.RSVP.all(promises).then(function() {
-            app.advanceReadiness();
-        });
-    }
-});
-
 var Notes = Ember.Application.create({
-    LOG_TRANSITIONS: true,
-    templates: ['application', 'notes', 'confirmDialog', 'selectedNote']
 });
 
 /** Router **/
-Notes.Router = Ember.Router.extend({});
-
 Notes.Router.map(function () {
-    this.route('notes', {path: "/"});
+    this.resource('notes', {path: "/"}, function() {
+        this.route('note', {path: "/note/:note_id"});
+    });
 });
 
-Notes.NotesRoute = Ember.Route.extend({});
+Notes.NotesRoute = Ember.Route.extend({
+    model: function() {
+        return this.store.find('note');
+    }
+});
 
-/** Controllers **/
-Notes.ApplicationController = Ember.Controller.extend({});
+Notes.NotesNoteRoute = Ember.Route.extend({
+    model: function(note) {
+        return this.store.find('note', note.note_id);
+    }
+});
+
+/** Ember Data **/
+Notes.Note = DS.Model.extend({
+    name: DS.attr('string'),
+    value: DS.attr('string')
+});
+
+Notes.Store = DS.Store.extend({
+    adapter: DS.LSAdapter
+});
+
 
 Notes.NotesController = Ember.ArrayController.extend({
+    needs: ['notesNote'],
     newNoteName: null,
 
-    createNewNote: function() {
-        var content = this.get('content');
-        var newNoteName = this.get('newNoteName');
-        var unique = newNoteName != null && newNoteName.length > 1;
-        content.forEach(function(note) {
-            if (newNoteName === note.get('name')) {
-                unique = false; return;
+    actions: {
+        createNewNote: function() {
+            var content = this.get('content');
+            var newNoteName = this.get('newNoteName');
+            var unique = newNoteName != null && newNoteName.length > 1;
+
+            content.forEach(function(note) {
+                if (newNoteName === note.get('name')) {
+                    unique = false; return;
+                }
+            });
+
+            if (unique) {
+                var newNote = this.store.createRecord('note');
+                newNote.set('id', newNoteName);
+                newNote.set('name', newNoteName);
+                newNote.save();
+
+                this.set('newNoteName', null);
+            } else {
+                alert('Note must have a unique name of at least 2 characters!');
             }
-        });
+        },
 
-        if (unique) {
-            content.pushObject(
-                Ember.Object.create({"name": newNoteName, "value": ""})
-            );
-            this.set('newNoteName', null);
-        } else {
-            alert('Note must have a unique name');
+        doDeleteNote: function (note) {
+            this.set('noteForDeletion', note);
+            $("#confirmDeleteNoteDialog").modal({"show": true});
+        },
+
+        doCancelDelete: function () {
+            this.set('noteForDeletion', null);
+            $("#confirmDeleteNoteDialog").modal('hide');
+        },
+
+        doConfirmDelete: function () {
+            var selectedNote = this.get('noteForDeletion');
+            this.set('noteForDeletion', null);
+            if (selectedNote) {
+                this.store.deleteRecord(selectedNote);
+                selectedNote.save();
+
+                if (this.get('controllers.notesNote.model.id') === selectedNote.get('id')) {
+                    this.transitionToRoute('notes');
+                }
+            }
+            $("#confirmDeleteNoteDialog").modal('hide');
         }
-    },
-
-    doDeleteNote: function(note) {
-        $("#confirmDeleteConfirmDialog").modal({show: true});
-    },
-
-    doConfirmDelete: function() {
-        var selectedNote = this.get('selectedNote');
-        if (selectedNote) {
-            this.get('content').removeObject(selectedNote);
-            this.set('selectedNote', null);
-        }
-        $("#confirmDeleteConfirmDialog").modal('hide');
-    },
-
-    doCancelDelete: function() {
-        $("#confirmDeleteConfirmDialog").modal('hide');
     }
 });
 
-Notes.SelectedNoteController = Ember.ObjectController.extend({
-    needs: ['notes'],
-    contentBinding: 'notesController.selectedNote'
-});
-
-//** Views **/
-Notes.NotesView = Ember.View.extend({
-    elementId: 'notes',
-    classNames: ['azureBlueBackground', 'azureBlueBorderThin']
-});
-
-Notes.SelectedNoteView = Ember.View.extend({
-    elementId: 'selectedNote'
-});
-
-Notes.TextField = Ember.TextField.extend(Ember.TargetActionSupport, {
-    insertNewline: function() {
-        this.triggerAction();
-    }
-});
-
-Notes.NoteListView = Ember.View.extend({
-    elementId: 'noteList',
-    template: Ember.Handlebars.compile('' +
-        '{{#each controller}}' +
-        '{{view Notes.NoteListItemView contentBinding="this"}}' +
-        '{{/each}}')
-});
-
-Notes.NoteListItemView = Ember.View.extend({
-    template: Ember.Handlebars.compile('' +
-        '{{name}}' +
-        '{{#if view.isSelected}}' +
-            '<button {{action doDeleteNote this}} class="btn btn-mini floatRight btn-danger smallMarginBottom">Delete</button>' +
-        '{{/if}}'),
-
-    classNames: ['pointer', 'noteListItem'],
-
-    classNameBindings: "isSelected",
-
-    isSelected: function() {
-        return this.get('controller.selectedNote.name') === this.get('content.name');
-    }.property('controller.selectedNote.name'),
-
-    click: function() {
-        this.get('controller').set('selectedNote', this.get('content'));
-    }
-});
-
-Notes.ConfirmDialogView = Ember.View.extend({
-    templateName: 'confirmDialog',
-    classNames: ['modal', 'hide'],
-
-    cancelButtonLabel: 'Cancel',
-    cancelAction: null,
-    okButtonLabel: "OK",
-    okAction: null,
-    header: null,
-    message: null,
-    target: null
-});
-
-Notes.BootstrapButton = Ember.View.extend(Ember.TargetActionSupport, {
-    tagName: 'button',
-    classNames: ['button'],
-    disabled: false,
-
-    click: function() {
-        if (!this.get('disabled')) {
-            this.triggerAction();
+Notes.NotesNoteController = Ember.ObjectController.extend({
+    actions: {
+        updateNote: function() {
+            var content = this.get('content');
+            console.log(content);
+            if (content) {
+                content.save();
+            }
         }
-    },
-
-    template: Ember.Handlebars.compile('{{#if view.iconName}}<i {{bindAttr class="view.iconName"}}></i>{{/if}}{{view.content}}')
+    }
 });

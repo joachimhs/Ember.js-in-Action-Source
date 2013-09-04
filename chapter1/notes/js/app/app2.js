@@ -1,101 +1,73 @@
-Ember.Application.reopen({
-    init: function() {
-        this._super();
-
-        this.loadTemplates();
-    },
-
-    templates: [],
-
-    loadTemplates: function() {
-        var app = this,
-            templates = this.get('templates');
-
-        app.deferReadiness();
-
-        var promises = templates.map(function(name) {
-            return Ember.$.get('/templates2/'+name+'.hbs').then(function(data) {
-                Ember.TEMPLATES[name] = Ember.Handlebars.compile(data);
-            });
-        });
-
-        Ember.RSVP.all(promises).then(function() {
-            app.advanceReadiness();
-        });
-    }
-});
-
 var Notes = Ember.Application.create({
-    templates: ['application', 'notes', ]
 });
 
 /** Router **/
 Notes.Router.map(function () {
-    this.route('notes', {path: "/"});
+    this.resource('notes', {path: "/"}, function() {
+		this.route('note', {path: "/note/:note_id"});
+	});
 });
 
-Notes.NotesRoute = Ember.Route.extend({});
+Notes.NotesRoute = Ember.Route.extend({
+	model: function() {
+		return this.store.find('note');
+	}
+});
 
-/** Controllers **/
-Notes.ApplicationController = Ember.Controller.extend({});
+Notes.NotesNoteRoute = Ember.Route.extend({
+	model: function(note) {
+		return this.store.find('note', note.note_id);
+	}
+});
+
+/** Ember Data **/
+Notes.Note = DS.Model.extend({
+    name: DS.attr('string'),
+	value: DS.attr('string')
+});
+
+Notes.Store = DS.Store.extend({
+    adapter: DS.LSAdapter
+});
+
 
 Notes.NotesController = Ember.ArrayController.extend({
-    newNoteName: null,
+	newNoteName: null,
 
-    createNewNote: function() {
-        var content = this.get('content');
-        var newNoteName = this.get('newNoteName');
+	actions: {
+	    createNewNote: function() {
+	        var content = this.get('content');
+	        var newNoteName = this.get('newNoteName');
+	        var unique = newNoteName != null && newNoteName.length > 1;
+	
+	        content.forEach(function(note) {
+	            if (newNoteName === note.get('name')) {
+	                unique = false; return;
+	            }
+	        });
 
-        content.pushObject(
-            Ember.Object.create({"name": newNoteName, "value": ""})
-        );
-
-        this.set('newNoteName', null);
-    }
+	        if (unique) {
+				var newNote = this.store.createRecord('note');
+				newNote.set('id', newNoteName);
+				newNote.set('name', newNoteName);
+				newNote.save();
+	
+	            this.set('newNoteName', null);
+	        } else {
+	            alert('Note must have a unique name of at least 2 characters!');
+	        }
+	    }
+	}
 });
 
-Notes.SelectedNoteController = Ember.ObjectController.extend({
-    needs: ['notes'],
-    contentBinding: 'controllers.notes.selectedNote',
-});
-
-//** Views **/
-Notes.ApplicationView = Ember.View.extend({});
-
-Notes.NotesView = Ember.View.extend({
-    elementId: 'notes',
-    classNames: ['azureBlueBackground', 'azureBlueBorderThin']
-});
-
-Notes.SelectedNoteView = Ember.View.extend({
-    elementId: 'selectedNote'
-});
-
-Notes.TextField = Ember.TextField.extend(Ember.TargetActionSupport, {
-    insertNewline: function() {
-        this.triggerAction();
-    }
-});
-
-Notes.NoteListView = Ember.View.extend({
-    elementId: 'noteList',
-    template: Ember.Handlebars.compile('' +
-        '{{#each controller}}' +
-        '{{view Notes.NoteListItemView contentBinding="this"}}' +
-        '{{/each}}')
-});
-
-Notes.NoteListItemView = Ember.View.extend({
-    template: Ember.Handlebars.compile('{{name}}'),
-    classNames: ['pointer', 'noteListItem'],
-
-    classNameBindings: "isSelected",
-
-    isSelected: function() {
-        return this.get('controller.selectedNote.name') === this.get('content.name');
-    }.property('controller.selectedNote.name'),
-
-    click: function() {
-        this.get('controller').set('selectedNote', this.get('content'));
+Notes.NotesNoteController = Ember.ObjectController.extend({
+    actions: {
+        updateNote: function() {
+            var content = this.get('content');
+            console.log(content);
+            if (content) {
+                content.save();
+            }
+        }
     }
 });

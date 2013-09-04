@@ -11,12 +11,64 @@
 	<link rel="stylesheet" href="css/bootstrap.css" type="text/css" charset="utf-8">
 	<link rel="stylesheet" href="css/master.css" type="text/css" charset="utf-8">
 
-    <script src="js/scripts/jquery-1.9.1.min.js" type="text/javascript" charset="utf-8"></script>
+    <script src="js/scripts/jquery-1.10.2.min.js" type="text/javascript" charset="utf-8"></script>
     <script src="js/scripts/bootstrap-modal.js" type="text/javascript" charset="utf-8"></script>
-    <script src="js/scripts/handlebars-1.0.rc.4.js" type="text/javascript" charset="utf-8"></script>
-    <script src="js/scripts/ember-1.0.0-rc.4.js" type="text/javascript" charset="utf-8"></script>
+    <script src="js/scripts/handlebars-1.0.0.js" type="text/javascript" charset="utf-8"></script>
+    <script src="js/scripts/ember-1.0.0.js" type="text/javascript" charset="utf-8"></script>
+	<script src="js/scripts/ember-data-beta-1.js" type="text/javascript" charset="utf-8"></script>
+	<script src="js/scripts/ember-data-localstorage.js" type="text/javascript" charset="utf-8"></script>
     <script src="js/app/app.js" type="text/javascript" charset="utf-8"></script>
 
+	<script type="text/x-handlebars" id="notes">
+		<div id="notes" class="azureBlueBackground azureBlueBorderThin">
+			{{view Notes.TextField target="controller" action="createNewNote" classNames="input-small mediumTopPadding" valueBinding="controller.newNoteName"}}
+			<button class="btn btn-default btn-xs" {{action createNewNote}}>New Note</button>
+
+			<div class="list-group" style="margin-top: 10px;">
+				{{#each controller}} 
+					<div class="list-group-item">
+						{{#linkTo "notes.note" this}}
+							{{name}}
+						{{/linkTo}}
+
+						<button class="btn btn-danger btn-xs pull-right" {{action "doDeleteNote" this}}>Delete</button>
+					</div>
+				{{/each}}
+			</div>
+		</div>
+
+		{{outlet}}
+
+		{{partial confirmDialog}}
+	</script>
+	
+	<script type="text/x-handlebars" id="notes/note">
+		<div id="selectedNote">
+		    <h1>name: {{name}}</h1>
+		    {{view Ember.TextArea valueBinding="value"}}
+            <button class="btn btn-primary form-control mediumTopPadding" {{action "updateNote"}}>Update</button><br />
+		</div>
+	</script>
+	
+	<script type="text/x-handlebars" id="confirmDialog">
+		<div class="modal fade">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header centerAlign">
+                        <button type="button" class="close" data-dismiss="modal" class="floatRight">×</button>
+                        <h1 class="centerAlign">Delete selected note?</h1>
+                    </div>
+                    <div class="modal-body">
+                        Are you sure you want to delete the selected Note? This action cannot be be undone!
+                    </div>
+                    <div class="modal-footer">
+                        <button class="btn btn-default" {{action "doCancelDelete"}}>Cancel</button>
+                        <button class="btn btn-primary" {{action "doConfirmDelete"}}>Delete Note</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+	</script>
 </head>
 <body bgcolor="#ffffff">
 
