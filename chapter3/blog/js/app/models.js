@@ -5,6 +5,7 @@ Blog.BlogPost = DS.Model.extend({
     postLongIntro: DS.attr('string'),
     postFilename: DS.attr('string'),
 
+    markdown: null,
     formattedDate: function() {
         if (this.get('postDate')) {
             return this.get('postDate').getUTCDay()
@@ -13,10 +14,9 @@ Blog.BlogPost = DS.Model.extend({
         }
 
         return '';
-    }.property('postDate').cacheable(),
+    }.property('postDate'),
 
     postFullUrl: function() {
         return "/blog/post/" + this.get('id');
-    }.property('id').cacheable(),
-    markdown: null
+    }.property('id')
 });

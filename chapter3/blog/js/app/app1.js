@@ -1,58 +1,11 @@
 var Blog = Ember.Application.create({
-});
-
-Blog.Router = Ember.Router.extend({
-    location: 'hash'
-});
-
-Blog.Router.map(function() {
-    this.route("index", {path: "/"});
-    this.route("blogIndex", {path: "/blog"});
-});
-
-Blog.IndexRoute = Ember.Route.extend({
-    redirect: function() {
-        this.transitionTo('blogIndex');
+    log: function(message) {
+        if (window.console) console.log(message);
     }
 });
 
-Blog.BlogIndexRoute = Ember.Route.extend({
-    model: function() {
-        return Blog.BlogPost.find();
-    }
-});
-
-Blog.ApplicationView = Ember.View.extend({
-    elementId: 'mainArea'
-});
-
-Blog.BlogIndexView = Ember.View.extend({
-    elementId: 'blogsArea'
-});
-
-Blog.ApplicationController = Ember.Controller.extend({});
-
-Blog.BlogIndexController = Ember.ArrayController.extend({
-    content: null
-});
-
-Ember.TEMPLATES['application'] = Ember.Handlebars.compile('' +
-    '<h1>Ember.js in Action Blog</h1>' +
-    '{{outlet}}'
-);
-
-Ember.TEMPLATES['blogIndex'] = Ember.Handlebars.compile('' +
-    '{{#each content}}' +
-        '<h1>{{postTitle}}</h1>' +
-        '<div class="postDate">{{formattedDate}}</div>' +
-        '{{postLongIntro}}<br />' +
-        '<hr class="blogSeperator"/>' +
-    '{{/each}}'
-);
-
-Blog.store = DS.Store.create({
-    adapter:  DS.RESTAdapter,
-    revision: 11
+Blog.Store = DS.Store.extend({
+    adapter: DS.RESTAdapter
 });
 
 Blog.BlogPost = DS.Model.extend({
@@ -61,6 +14,7 @@ Blog.BlogPost = DS.Model.extend({
     postShortIntro: DS.attr('string'),
     postLongIntro: DS.attr('string'),
     postFilename: DS.attr('string'),
+
     markdown: null,
 
     formattedDate: function() {
@@ -71,11 +25,30 @@ Blog.BlogPost = DS.Model.extend({
         }
 
         return '';
-    }.property('postDate').cacheable(),
-
-    postFullUrl: function() {
-        return "/blog/post/" + this.get('id');
-    }.property('id').cacheable()
+    }.property('postDate')
 });
 
-Blog.initialize();
+Blog.Router = Ember.Router.extend({
+    location: 'hash'
+});
+
+Blog.Router.map(function() {
+    this.route("index", {path: "/"});
+    this.route("blog", {path: "/blog"});
+});
+
+Blog.IndexRoute = Ember.Route.extend({
+    redirect: function() {
+        this.transitionTo('blog');
+    }
+});
+
+Blog.BlogRoute = Ember.Route.extend({
+    model: function() {
+        return this.store.find('blogPost');
+    }
+});
+
+Blog.ApplicationView = Ember.View.extend({
+    //elementId: 'mainArea'
+});

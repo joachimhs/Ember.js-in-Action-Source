@@ -9,18 +9,49 @@
 	<title>Ember.js In Action Blog</title>
 	<link rel="stylesheet" href="css/master.css" type="text/css" charset="utf-8">
 	<meta name="author" content="Joachim Haagen Skeie">
-    <script src="js/scripts/jquery-1.8.2.min.js" type="text/javascript" charset="utf-8"></script>
+    <script src="js/scripts/jquery-1.10.2.min.js" type="text/javascript" charset="utf-8"></script>
     <script src="js/scripts/showdown.js" type="text/javascript" charset="utf-8"></script>
-    <script src="js/scripts/handlebars-1.0.rc.2.js" type="text/javascript" charset="utf-8"></script>
-    <script src="js/scripts/ember-1.0.0-pre.4.js" type="text/javascript" charset="utf-8"></script>
-    <script src="js/scripts/ember-data-20130125.js" type="text/javascript" charset="utf-8"></script>
+    <script src="js/scripts/handlebars-1.0.0.js" type="text/javascript" charset="utf-8"></script>
+    <script src="js/scripts/ember-1.0.0.js" type="text/javascript" charset="utf-8"></script>
+    <script src="js/scripts/ember-data-beta-1.js" type="text/javascript" charset="utf-8"></script>
     <script src="js/app/app.js" type="text/javascript" charset="utf-8"></script>
     <script src="js/app/models.js" type="text/javascript" charset="utf-8"></script>
-    <script src="js/app/templates.js" type="text/javascript" charset="utf-8"></script>
     <script src="js/app/views.js" type="text/javascript" charset="utf-8"></script>
     <script src="js/app/controllers.js" type="text/javascript" charset="utf-8"></script>
     <script src="js/app/router.js" type="text/javascript" charset="utf-8"></script>
-    <script src="js/app/main.js" type="text/javascript" charset="utf-8"></script>
+
+    <script type="text/x-handlebars" id="application">
+        <h1>Ember.js in Action Blog</h1>
+        <div class="headerLinks">
+            {{#linkTo "blog.index"}}Home{{/linkTo}}<span class="middot">&middot;</span>
+            {{#linkTo "about"}}About{{/linkTo}}
+        </div>
+
+        {{outlet}}
+    </script>
+
+    <script type="text/x-handlebars" id="blog/index">
+        {{#each controller}}
+            <h1>{{postTitle}}</h1>
+            <div class="postDate">{{formattedDate}}</div>
+            {{postLongIntro}}<br />
+            <br />{{#linkTo "blog.post" this}}Full Article ->{{/linkTo}}
+            <hr class="blogSeperator"/>
+        {{/each}}
+    </script>
+
+    <script type="text/x-handlebars" id="blog/post">
+        <div class="postDate">{{formattedDate}}</div>
+        <br />{{#linkTo "blog.index"}}&lt; back{{/linkTo}}
+        {{markdown}}
+        <br />{{#linkTo "blog.index"}}&lt; back{{/linkTo}}
+    </script>
+
+    <script type="text/x-handlebars" id="about">
+        <h1>About</h1>
+        This blog is part of the Ember in Action book.
+        Sample code for chapter 3.
+    </script>
 
 </head>
 <body bgcolor="#ffffff">

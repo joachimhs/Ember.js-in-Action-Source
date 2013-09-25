@@ -5,34 +5,26 @@ Blog.Router = Ember.Router.extend({
 Blog.Router.map(function() {
     this.route("index", {path: "/"});
     this.resource("blog", {path: "/blog"}, function() {
-        this.route("blogIndex", {path: '/posts'});
-        this.route("blogPost", {path: '/post/:blog_post_id'});
+        this.route("index", {path: '/posts'});
+        this.route("post", {path: '/post/:blog_post_id'});
     });
     this.route("about", {path: "/about"});
 });
 
 Blog.IndexRoute = Ember.Route.extend({
     redirect: function() {
-        console.log('indexRoute');
-        this.transitionTo('blog.blogIndex');
+        this.transitionTo('blog.index');
     }
 });
 
-Blog.BlogBlogIndexRoute = Ember.Route.extend({
+Blog.BlogIndexRoute = Ember.Route.extend({
     model: function() {
-        console.log('BlogBlogIndexRoute model');
-        return Blog.BlogPost.find();
+        return this.store.find('blogPost');
     }
-
-    //setupController: function(controller) {
-    //    console.log('Blog.BlogsRoute setupControllers');
-    //    controller.set('content', Blog.BlogPost.find());
-    //}
 });
 
-Blog.BlogBlogPostRoute = Ember.Route.extend({
-    setupController: function(controller, model) {
-        console.log('Blog.BlogPostRoute setupControllers');
-        controller.set('content', model);
+Blog.BlogPostRoute = Ember.Route.extend({
+    model: function(blogPost) {
+        return this.store.find('blogPost', blogPost.blog_post_id);
     }
 });

@@ -4,7 +4,6 @@ var Blog = Ember.Application.create({
     }
 });
 
-Blog.store = DS.Store.create({
-    adapter:  DS.RESTAdapter.create(),
-    revision: 11
+Blog.Store = DS.Store.extend({
+    adapter: DS.RESTAdapter
 });

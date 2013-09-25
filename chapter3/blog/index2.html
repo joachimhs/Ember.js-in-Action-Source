@@ -1,21 +1,49 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN"
-   "http://www.w3.org/TR/html4/strict.dtd">
+        "http://www.w3.org/TR/html4/strict.dtd">
 
 <html lang="en">
 <head>
-	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
 
-	<title>Ember.js In Action Blog</title>
-	<link rel="stylesheet" href="css/master.css" type="text/css" charset="utf-8">
-	<meta name="author" content="Joachim Haagen Skeie">
-    <script src="js/scripts/jquery-1.8.2.min.js" type="text/javascript" charset="utf-8"></script>
+    <title>Ember.js In Action Blog</title>
+    <link rel="stylesheet" href="css/master.css" type="text/css" charset="utf-8">
+    <meta name="author" content="Joachim Haagen Skeie">
+    <script src="js/scripts/jquery-1.10.2.min.js" type="text/javascript" charset="utf-8"></script>
     <script src="js/scripts/showdown.js" type="text/javascript" charset="utf-8"></script>
-    <script src="js/scripts/handlebars-1.0.rc.2.js" type="text/javascript" charset="utf-8"></script>
-    <script src="js/scripts/ember-1.0.0-pre.4.js" type="text/javascript" charset="utf-8"></script>
-    <script src="js/scripts/ember-data-20130125.js" type="text/javascript" charset="utf-8"></script>
+    <script src="js/scripts/handlebars-1.0.0.js" type="text/javascript" charset="utf-8"></script>
+    <script src="js/scripts/ember-1.0.0.js" type="text/javascript" charset="utf-8"></script>
+    <script src="js/scripts/ember-data-beta-1.js" type="text/javascript" charset="utf-8"></script>
     <script src="js/app/app2.js" type="text/javascript" charset="utf-8"></script>
 
+    <script type="text/x-handlebars" id="application">
+        <div id="mainArea">
+            <h1>Ember.js in Action Blog</h1>
+
+            {{outlet}}
+        </div>
+    </script>
+
+    <script type="text/x-handlebars" id="blog/index">
+        <div id="blogsArea">
+            {{#each controller}}
+                <h1>{{postTitle}}</h1>
+                <div class="postDate">{{formattedDate}}</div>
+                {{postLongIntro}}<br />
+                <br />{{#linkTo "blog.post" this}}Full Article ->{{/linkTo}}
+                <hr class="blogSeperator"/>
+            {{/each}}
+        </div>
+    </script>
+
+    <script type="text/x-handlebars" id="blog/post">
+        <div id="blogPostArea">
+            <div class="postDate">{{formattedDate}}</div>
+            <br />{{#linkTo "blog.index"}}&lt; back{{/linkTo}}
+            {{markdown}}
+            <br />{{#linkTo "blog.index"}}&lt; back{{/linkTo}}
+        </div>
+    </script>
 </head>
 <body bgcolor="#ffffff">
 </body>
