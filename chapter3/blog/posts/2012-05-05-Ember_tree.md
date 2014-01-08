@@ -181,7 +181,7 @@ And the _tree-node-content_ template:
 
 The above template tells us that we will render an empty span if the node has no children nodes. In effect this will indent our nodes without children an equal amount of pixels as our disclosure triangle occupies, in order to align the checkboxes neatly:
 
-![Ember.js Tree](/images/ember_tree2.png)
+![Ember.js Tree](/chapter3/blog/images/ember_tree2.png)
 
 Also, the template tells us that we are rendering the checkbox as a standard Ember.Checkbox view, while the disclosure triangle and the text is rendered in separate views: 
 
