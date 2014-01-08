@@ -5,7 +5,7 @@ Admittedly there are tons of JavaScript Tree implementations out there, so why b
 
 First off, this is what our final result will look like:
 
-![Ember.js Tree](/images/ember_tree1.png)
+![Ember.js Tree](/master/chapter3/blog/images/ember_tree1.png)
 
 There are a few things that we can note about the features of this tree structure:
 
