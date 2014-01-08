@@ -3,7 +3,7 @@ Ember.js-in-Action-Source
 
 This is the code examples from Ember.js in Action. The code is split up into the following: 
 
-- Chapter 1 code is used for both chapter 1 and chapter 2. Live Demo: http://stuff.haagen.name/notes/index.htm
+- Chapter 1 code is used for both chapter 1 and chapter 2. Live Demo: http://stuff.haagen.name/notes/index.html
 - Chapter 3 code is located in the chapter 3 directory. 
 - Chapter 4 does not have any associated source code. 
 - Chapter 5, 7, 8, 9 and 11 uses the Montric application as its source: http://github.com/joachimhs/Montric
